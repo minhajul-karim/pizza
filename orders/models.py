@@ -87,6 +87,7 @@ class Order(models.Model):
                                  null=True,
                                  on_delete=models.CASCADE,
                                  related_name="topping3")
+    extra_cheese = models.CharField(max_length=5, default="No")
     size = models.ForeignKey(Size,
                              blank=True,
                              null=True,
