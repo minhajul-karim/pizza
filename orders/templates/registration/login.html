@@ -1,0 +1,19 @@
+{% extends "orders/base.html" %}
+
+{% block title %}
+Log In - Pinocchio's Pizza & Subs
+{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="auth-forms">
+    <h1 class="display-3 mt-5 mb-3">Log In</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <p class="mb-2">Don't have an account? Sign up <a href="/signup">here</a>.</p>
+        <button class="btn btn-primary btn-lg" type="submit">Log In</button>
+    </form>
+</div>
+{% endblock %}
