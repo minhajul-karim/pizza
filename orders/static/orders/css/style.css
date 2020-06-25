@@ -67,8 +67,33 @@ footer a:hover {
   display: none;
 }
 
+/* Hide unnecessary card items of homepage */
+.card-footer,
+.card-text,
+.card-body h5 {
+  display: none;
+}
+
+/* Product page */
+#product-image-1,
+#product-image-2 {
+  width: 100%;
+  height: 300px;
+  background-color: blueviolet;
+}
+
+#product-image-1 {
+  display: none;
+}
+
 @media all and (max-width: 768px) {
   .auth-forms {
     width: 300px;
+  }
+  #product-image-1 {
+    display: block;
+  }
+  #product-image-2 {
+    display: none;
   }
 }

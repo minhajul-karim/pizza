@@ -6,7 +6,8 @@ from django.db import models
 class FoodItem(models.Model):
     """The class to contain food items."""
 
-    food_name = models.CharField(max_length=20)
+    food_name = models.CharField(max_length=100)
+    food_image = models.CharField(max_length=1000, default="abc")
 
     def __str__(self):
         """Object representation of Fooditem class."""
