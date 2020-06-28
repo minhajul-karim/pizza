@@ -39,6 +39,14 @@ body {
   color: #000;
 }
 
+.alert {
+  display: none;
+}
+
+#cheese-section {
+  display: none;
+}
+
 footer {
   position: absolute;
   bottom: 0;

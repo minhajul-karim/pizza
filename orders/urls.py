@@ -17,5 +17,5 @@ urlpatterns = [
          views.product_view, name="salads"),
     path("dinner-platters/<int:food_id>",
          views.product_view, name="dinner-platters"),
-    path("test", views.test),
+    path("tell_price", views.price),
 ]

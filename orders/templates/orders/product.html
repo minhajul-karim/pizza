@@ -10,6 +10,13 @@
     <form>
         <div class="row mt-5">
             <div class="col-md-6" class="customization-section">
+                <!-- Alert -->
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <strong>Hi!</strong> We serve this food only in large size.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
                 <div id="product-image-1">
                     <img src="{{ image }}" alt="{{ food }}">
                 </div>
@@ -28,8 +35,8 @@
                 {% if toppings %}
                 {% for i in "123"|make_list %}
                 <div class="form-group">
-                    <label for="exampleFormControlSelect2">Toppings</label>
-                    <select class="form-control" id="exampleFormControlSelect2">
+                    <label for="toppings">Toppings</label>
+                    <select class="form-control" id="toppings">
                         {% for topping in toppings %}
                         <option>{{ topping }}</option>
                         {% endfor %}
@@ -38,14 +45,26 @@
                 {% endfor %}
                 {% endif %}
 
+                <!-- Cheese section -->
+                <div id="cheese-section">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="cheese" id="cheese-yes" value="0.50">
+                        <label class="form-check-label" for="cheese-yes">Add extra cheese</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="cheese" id="cheese-no" value="-0.50">
+                        <label class="form-check-label" for="cheese-no">No, I'm good</label>
+                    </div>
+                </div>
+
                 <!-- Size section -->
                 {% if sizes %}
-                <div id="size-section">
+                <div id="size-section" class="mt-2">
                     {% for size in sizes %}
                     {% if forloop.first %}
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="radio" name="size" id="inline-size-{{ size }}"
-                            value="{{ size }}" data-size-id={{ size.id }} checked="checked">
+                            value="{{ size }}" data-size-id={{ size.id }} checked>
                         <label class="form-check-label" for="inline-size-{{ size }}">{{ size }}</label>
                     </div>
                     {% else %}
@@ -58,7 +77,11 @@
                     {% endfor %}
                 </div>
                 {% endif %}
+
+
             </div>
+
+            <!-- Order section -->
             <div class="col-md-6" class="order-section">
                 <div id="product-image-2">
                     <img src="{{ image }}" alt="{{ food }}">

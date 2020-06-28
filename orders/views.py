@@ -60,7 +60,8 @@ def product_view(request, food_id):
     return render(request, "orders/product.html", context)
 
 
-def test(request):
+def price(request):
+    """Tells the price to client."""
     if request.method == "POST":
         food_id = request.POST["foodId"]
         addon_id = request.POST["addonId"]
