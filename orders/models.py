@@ -8,6 +8,7 @@ class FoodItem(models.Model):
 
     food_name = models.CharField(max_length=100)
     food_image = models.CharField(max_length=1000, default="abc")
+    slug = models.CharField(max_length=100, default="abc")
 
     def __str__(self):
         """Object representation of Fooditem class."""
@@ -44,7 +45,7 @@ class Topping(models.Model):
         return f"{self.topping_name}"
 
 
-class Price(models.Model):
+class Menu(models.Model):
     """The class to contain price."""
 
     food = models.ForeignKey(FoodItem, on_delete=models.CASCADE)

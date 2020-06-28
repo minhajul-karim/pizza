@@ -5,7 +5,6 @@ Pinocchio's Pizza & Subs
 {% endblock %}
 
 {% block content %}
-<!-- Page Content -->
 <div class="container">
     <div class="row">
         <div class="col">
@@ -40,10 +39,11 @@ Pinocchio's Pizza & Subs
                 {% for food in foods %}
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card h-100">
-                        <a href="#"><img class="card-img-top" src="{{ food.food_image }}" alt=""></a>
+                        <a href="{{ food.slug }}/{{ food.id }}"><img class="card-img-top" src="{{ food.food_image }}"
+                                alt=""></a>
                         <div class="card-body">
                             <h4 class="card-title">
-                                <a href="#">{{ food.food_name }}</a>
+                                <a href="{{ food.slug }}/{{ food.id }}">{{ food.food_name }}</a>
                             </h4>
                         </div>
                     </div>

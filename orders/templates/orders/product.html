@@ -1,0 +1,75 @@
+{% extends "orders/base.html" %}
+{% load static %}
+
+{% block title %}
+{{ food }} - Pinocchio's Pizza & Subs
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <form>
+        <div class="row mt-5">
+            <div class="col-md-6" class="customization-section">
+                <div id="product-image-1">
+                    <img src="{{ image }}" alt="{{ food }}">
+                </div>
+                <h1>{{ food }}</h1>
+                <hr>
+                <div class="form-group">
+                    <label for="select-addon">Select your add-ons</label>
+                    <select class="form-control" id="select-addon">
+                        {% for addon in addons %}
+                        <option data-addon-id="{{ addon.id }}">{{ addon }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Toppings sections -->
+                {% if toppings %}
+                {% for i in "123"|make_list %}
+                <div class="form-group">
+                    <label for="exampleFormControlSelect2">Toppings</label>
+                    <select class="form-control" id="exampleFormControlSelect2">
+                        {% for topping in toppings %}
+                        <option>{{ topping }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <!-- Size section -->
+                {% if sizes %}
+                <div id="size-section">
+                    {% for size in sizes %}
+                    {% if forloop.first %}
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="size" id="inline-size-{{ size }}"
+                            value="{{ size }}" data-size-id={{ size.id }} checked="checked">
+                        <label class="form-check-label" for="inline-size-{{ size }}">{{ size }}</label>
+                    </div>
+                    {% else %}
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="size" id="inline-size-{{ size }}"
+                            value="{{ size }}" data-size-id={{ size.id }}>
+                        <label class="form-check-label" for="inline-size-{{ size }}">{{ size }}</label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-6" class="order-section">
+                <div id="product-image-2">
+                    <img src="{{ image }}" alt="{{ food }}">
+                </div>
+                <div class="product-price">
+                    <h1 class="display-3 text-center">$<span id="set-price">0.0</span></h1>
+                    <button class="btn btn-success btn-lg btn-block" type="">Add to cart</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="{% static 'orders/js/index.js' %}"></script>
+{% endblock %}

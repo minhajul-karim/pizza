@@ -34,6 +34,11 @@ body {
   color: #fff !important;
 }
 
+.card-title a {
+  text-decoration: none;
+  color: #000;
+}
+
 footer {
   position: absolute;
   bottom: 0;
@@ -79,14 +84,19 @@ footer a:hover {
 #product-image-2 {
   width: 100%;
   height: 300px;
-  background-color: blueviolet;
+  overflow: hidden;
+}
+
+#product-image-1 img,
+#product-image-2 img {
+  width: 100%;
 }
 
 #product-image-1 {
   display: none;
 }
 
-@media all and (max-width: 768px) {
+@media all and (max-width: 767px) {
   .auth-forms {
     width: 300px;
   }

@@ -1,18 +1,15 @@
 """View of index page."""
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
-from .forms import SignupForm, AuthenticationForm
-from .models import FoodItem, Price, Topping
-
-# Create your views here.
+from .forms import SignupForm
+from .models import FoodItem, Menu, Topping
 
 
 def index(request):
     """Home page."""
     foods = FoodItem.objects.all()
-    print(foods)
     return render(request, "orders/index.html", {"foods": foods})
 
 
@@ -29,20 +26,51 @@ def signup_view(request):
             return redirect("index")
     else:
         form = SignupForm()
-
     return render(request, "orders/sign_up.html", {"form": form})
 
 
-def regular_pizza_view(request):
-    """View for regular pizzas."""
-    foods = Price.objects.filter(food=1)
-    addons = [food.addon.addon_name for food in foods]
+def product_view(request, food_id):
+    """View product page.
+
+    We get the food id via argument and grab menu for that food.
+    Then we make lists of addons and sizes, remove duplicates from them
+    and render the product page.
+    """
+    menu = Menu.objects.filter(food=food_id)
+    image = FoodItem.objects.get(pk=food_id).food_image
+    addons = [food.addon for food in menu]
     addons = list(set(addons))
-    addons.sort()
-    toppings = Topping.objects.all()
-    print(toppings)
+    sizes = [food.size for food in menu]
+    sizes = list(set(sizes))
+    # We make sizes[] & toppings[] empty
+    # if a food doesn't come with any sizes or toppings or both
+    if len(sizes) == 1 and sizes[0] is None:
+        sizes = []
+    if food_id == 1 or food_id == 2:
+        toppings = Topping.objects.all()
+    else:
+        toppings = []
     context = {
+        "food": menu[0].food,
+        "image": image,
         "addons": addons,
         "toppings": toppings,
+        "sizes": sizes
     }
-    return render(request, "orders/reg_pizza.html", context)
+    return render(request, "orders/product.html", context)
+
+
+def test(request):
+    if request.method == "POST":
+        food_id = request.POST["foodId"]
+        addon_id = request.POST["addonId"]
+        size_id = request.POST["sizeId"]
+        if size_id == "null":
+            size_id = None
+        price = Menu.objects.filter(
+            food=food_id,
+            addon=addon_id,
+            size=size_id)[0].price
+        return JsonResponse({"price": price})
+    else:
+        return JsonResponse({"status": "Invalid request."})
