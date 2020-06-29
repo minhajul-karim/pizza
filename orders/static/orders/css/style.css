@@ -43,6 +43,12 @@ body {
   display: none;
 }
 
+#toppings-1,
+#toppings-2,
+#toppings-3 {
+  display: none;
+}
+
 #cheese-section {
   display: none;
 }

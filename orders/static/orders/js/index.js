@@ -9,10 +9,37 @@ document.addEventListener('DOMContentLoaded', () => {
   // Calculate price on page load
   calculatePrice()
 
-  // Calculate price on addon change
-  document.querySelector('#select-addon').addEventListener('change', () => {
-    calculatePrice()
-  })
+  // Calculate price & display topping options on addon change
+  document
+    .querySelector('#select-addon')
+    .addEventListener('change', (event) => {
+      calculatePrice()
+      const top1 = document.querySelector('#toppings-1'),
+        top2 = document.querySelector('#toppings-2'),
+        top3 = document.querySelector('#toppings-3')
+      let selectedAddon = event.target.value
+      switch (selectedAddon) {
+        case '1 topping':
+          top1.style.display = 'block'
+          top2.style.display = 'none'
+          top3.style.display = 'none'
+          break
+        case '2 toppings':
+          top1.style.display = 'block'
+          top2.style.display = 'block'
+          top3.style.display = 'none'
+          break
+        case '3 toppings':
+          top1.style.display = 'block'
+          top2.style.display = 'block'
+          top3.style.display = 'block'
+          break
+        default:
+          top1.style.display = 'none'
+          top2.style.display = 'none'
+          top3.style.display = 'none'
+      }
+    })
 
   // Calculate price for small sizes
   document

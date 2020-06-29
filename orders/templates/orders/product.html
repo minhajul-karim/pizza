@@ -34,9 +34,9 @@
                 <!-- Toppings sections -->
                 {% if toppings %}
                 {% for i in "123"|make_list %}
-                <div class="form-group">
-                    <label for="toppings">Toppings</label>
-                    <select class="form-control" id="toppings">
+                <div class="form-group" id="toppings-{{ i }}">
+                    <label for="toppings">Toppings {{ i }}</label>
+                    <select class="form-control">
                         {% for topping in toppings %}
                         <option>{{ topping }}</option>
                         {% endfor %}
