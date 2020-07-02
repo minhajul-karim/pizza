@@ -113,11 +113,9 @@ def add_to_cart(request):
             size = Size.objects.get(
                 size_name=request.POST["size"]) if "size" in request.POST else None
             price = request.POST["price"]
-            if "cheese" in request.POST:
-                if request.POST["cheese"] == "Y":
-                    extra_cheese = request.POST["cheese"]
-                else:
-                    extra_cheese = None
+            extra_cheese = None
+            if "cheese" in request.POST and request.POST.get("cheese") == "Y":
+                extra_cheese = request.POST["cheese"]
             # Save data into db
             ord = Order(user=User.objects.get(pk=request.user.id),
                         food=FoodItem.objects.get(pk=food_id),
