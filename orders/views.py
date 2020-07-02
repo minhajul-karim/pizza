@@ -140,10 +140,14 @@ def cart_view(request):
     We display all orders that weren't confirmed by user.
     """
     orders = Order.objects.filter(user=request.user.id, status=1)
-    orders_count = Order.objects.filter(user=request.user.id, status=1).count()
+    total_price = 0
+    for order in orders:
+        total_price += order.price
+    orders_count = orders.count()
     context = {
         "orders": orders,
-        "orders_count": orders_count
+        "orders_count": orders_count,
+        "total_price": total_price,
     }
     return render(request, "orders/cart.html", context)
 
@@ -178,7 +182,11 @@ def delete_order(request):
         order_id = request.POST["orderId"]
         Order.objects.get(id=order_id).delete()
         remaining_orders = Order.objects.filter(
-            user=request.user.id, status=1).count()
-        return JsonResponse({"remaining_orders": remaining_orders})
+            user=request.user.id, status=1)
+        total_price = 0
+        for order in remaining_orders:
+            total_price += order.price
+        return JsonResponse({"remaining_orders": remaining_orders.count(),
+                             "total_price": total_price})
     else:
         return JsonResponse({"status": "Invalid request."})

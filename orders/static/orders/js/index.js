@@ -187,14 +187,17 @@ document.addEventListener('DOMContentLoaded', () => {
           xhr = new XMLHttpRequest()
         xhr.open('POST', '/delete-order')
         xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'))
-        // Hide order confirmation form if the cart is empty
+        // Update cart information
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            let remaingingOrders = JSON.parse(xhr.responseText)[
-              'remaining_orders'
-            ]
-            if (remaingingOrders === 0) {
+            let data = JSON.parse(xhr.responseText)
+            // Update price
+            document.querySelector('#total-price').textContent =
+              data['total_price']
+            // Hide order button and price when cart is empty
+            if (data['remaining_orders'] === 0) {
               document.querySelector('#order-form').style.display = 'none'
+              document.querySelector('#price-row').style.display = 'none'
             }
           } else {
             Error('Price not available')
