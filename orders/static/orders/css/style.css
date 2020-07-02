@@ -43,13 +43,15 @@ body {
   display: none;
 }
 
-#toppings-1,
-#toppings-2,
-#toppings-3 {
+#topping-1,
+#topping-2,
+#topping-3 {
   display: none;
 }
 
-#cheese-section {
+/* #cheese-section, */
+#hidden-food-id,
+#hidden-price {
   display: none;
 }
 

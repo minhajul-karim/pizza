@@ -6,8 +6,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <form>
+<div class="container" id="product-container">
+    <form action="/add-to-cart" method="POST">
+        {% csrf_token %}
         <div class="row mt-5">
             <div class="col-md-6" class="customization-section">
                 <!-- Alert -->
@@ -24,7 +25,7 @@
                 <hr>
                 <div class="form-group">
                     <label for="select-addon">Select your add-ons</label>
-                    <select class="form-control" id="select-addon">
+                    <select class="form-control" id="select-addon" name="addon">
                         {% for addon in addons %}
                         <option data-addon-id="{{ addon.id }}">{{ addon }}</option>
                         {% endfor %}
@@ -34,11 +35,11 @@
                 <!-- Toppings sections -->
                 {% if toppings %}
                 {% for i in "123"|make_list %}
-                <div class="form-group" id="toppings-{{ i }}">
-                    <label for="toppings">Toppings {{ i }}</label>
-                    <select class="form-control">
+                <div class="form-group" id="topping-{{ i }}">
+                    <label for="toppings">Topping {{ i }}</label>
+                    <select class="form-control" name="topping-{{ i }}" id="topping-options-{{ i }}">
                         {% for topping in toppings %}
-                        <option>{{ topping }}</option>
+                        <option data-topping-id="{{ topping.id }}">{{ topping }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -46,16 +47,17 @@
                 {% endif %}
 
                 <!-- Cheese section -->
+                {% if cheese_options %}
                 <div id="cheese-section">
+                    {% for cheese in cheese_options %}
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="cheese" id="cheese-yes" value="0.50">
-                        <label class="form-check-label" for="cheese-yes">Add extra cheese</label>
+                        <input class="form-check-input" type="radio" name="cheese" id="{{ cheese.id }}"
+                            value="{{ cheese.value }}">
+                        <label class="form-check-label" for="{{ cheese.id }}">{{ cheese.label }}</label>
                     </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="cheese" id="cheese-no" value="-0.50">
-                        <label class="form-check-label" for="cheese-no">No, I'm good</label>
-                    </div>
+                    {% endfor %}
                 </div>
+                {% endif %}
 
                 <!-- Size section -->
                 {% if sizes %}
@@ -88,7 +90,9 @@
                 </div>
                 <div class="product-price">
                     <h1 class="display-3 text-center">$<span id="set-price">0.0</span></h1>
-                    <button class="btn btn-success btn-lg btn-block" type="">Add to cart</button>
+                    <input type="text" name="food-id" id="hidden-food-id" value="">
+                    <input type="text" name="price" id="hidden-price" value="">
+                    <button class="btn btn-primary btn-lg btn-block" type="submit">Add to cart</button>
                 </div>
             </div>
         </div>

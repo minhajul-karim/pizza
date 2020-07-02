@@ -1,6 +1,7 @@
 """Definition of Database models."""
 
 from django.db import models
+from django.conf import settings
 
 
 class FoodItem(models.Model):
@@ -45,6 +46,16 @@ class Topping(models.Model):
         return f"{self.topping_name}"
 
 
+class Status(models.Model):
+    """The class to contain order status."""
+
+    status_name = models.CharField(max_length=50)
+
+    def __str__(self):
+        """Object representation of Status class."""
+        return f"{self.status_name}"
+
+
 class Menu(models.Model):
     """The class to contain price."""
 
@@ -70,6 +81,9 @@ class Menu(models.Model):
 class Order(models.Model):
     """The class to contain orders."""
 
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE,
+                             default=0)
     food = models.ForeignKey(FoodItem,
                              on_delete=models.CASCADE)
     addon = models.ForeignKey(AddOn,
@@ -89,15 +103,20 @@ class Order(models.Model):
                                  null=True,
                                  on_delete=models.CASCADE,
                                  related_name="topping3")
-    extra_cheese = models.CharField(max_length=5, default="No")
+    extra_cheese = models.CharField(max_length=5,
+                                    blank=True,
+                                    null=True,
+                                    default="N")
     size = models.ForeignKey(Size,
                              blank=True,
                              null=True,
                              on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    total = models.DecimalField(max_digits=10,
+    price = models.DecimalField(max_digits=10,
                                 decimal_places=2)
+    status = models.ForeignKey(Status,
+                               on_delete=models.CASCADE,
+                               default="not confirmed")
 
     def __str__(self):
         """Object representation of Order class."""
-        return f"{self.food} - {self.total}"
+        return f"{self.food} - {self.price}"

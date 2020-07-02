@@ -1,0 +1,62 @@
+{% extends "orders/base.html" %}
+{% load static %}
+
+{% block title %}
+Cart - Pinocchio's Pizza & Subs
+{% endblock %}
+
+{% block content %}
+{% if orders %}
+<div class="container-fluid mt-5 text-center" id="cart-table">
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">id</th>
+                    <th scope="col">Food</th>
+                    <th scope="col">Addon</th>
+                    <th scope="col">Topping 1</th>
+                    <th scope="col">Topping 2</th>
+                    <th scope="col">Topping 3</th>
+                    <th scope="col">Extra cheese</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.food }}</td>
+                    <td>{{ order.addon }}</td>
+                    <td>{{ order.topping1 }}</td>
+                    <td>{{ order.topping2 }}</td>
+                    <td>{{ order.topping3 }}</td>
+                    <td>{{ order.extra_cheese }}</td>
+                    <td>{{ order.size }}</td>
+                    <td>{{ order.price }}</td>
+                    <td>{{ order.status }}</td>
+                    <td class="text-center cross-sign" style="cursor: pointer;">
+                        <svg id="i-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"
+                            fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="10">
+                            <path d="M2 30 L30 2 M30 30 L2 2" />
+                        </svg>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <form id="order-form" action="/confirm-order" method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-lg">Confirm order</button>
+    </form>
+</div>
+{% else %}
+<p class="lead text-center mt-5">Your cart is currently empty!</p>
+{% endif %}
+<script src="{% static 'orders/js/index.js' %}"></script>
+{% endblock %}

@@ -1,139 +1,220 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const cheeseSection = document.querySelector('#cheese-section')
-  let foodId = window.location.pathname.split('/').pop()
-  // Display extra cheese option for subs
-  parseInt(foodId) === 3
-    ? (cheeseSection.style.display = 'block')
-    : (cheeseSection.style.display = 'none')
+  const productCotainer = document.querySelector('#product-container')
+  if (productCotainer) {
+    let foodId = parseInt(window.location.pathname.split('/').pop())
 
-  // Calculate price on page load
-  calculatePrice()
+    // Calculate price on page load
+    calculatePrice()
 
-  // Calculate price & display topping options on addon change
-  document
-    .querySelector('#select-addon')
-    .addEventListener('change', (event) => {
-      calculatePrice()
-      const top1 = document.querySelector('#toppings-1'),
-        top2 = document.querySelector('#toppings-2'),
-        top3 = document.querySelector('#toppings-3')
-      let selectedAddon = event.target.value
-      switch (selectedAddon) {
-        case '1 topping':
-          top1.style.display = 'block'
-          top2.style.display = 'none'
-          top3.style.display = 'none'
-          break
-        case '2 toppings':
-          top1.style.display = 'block'
-          top2.style.display = 'block'
-          top3.style.display = 'none'
-          break
-        case '3 toppings':
-          top1.style.display = 'block'
-          top2.style.display = 'block'
-          top3.style.display = 'block'
-          break
-        default:
-          top1.style.display = 'none'
-          top2.style.display = 'none'
-          top3.style.display = 'none'
+    // Calculate price & display topping options on addon change
+    document
+      .querySelector('#select-addon')
+      .addEventListener('change', (event) => {
+        calculatePrice()
+        if (foodId === 1 || foodId === 2) {
+          switch (event.target.value) {
+            case '1 topping':
+              topping1Div.style.display = 'block'
+              topping1Select.disabled = false
+              topping2Div.style.display = 'none'
+              topping2Select.disabled = true
+              topping3Div.style.display = 'none'
+              topping3Select.disabled = true
+              break
+            case '2 toppings':
+              topping1Div.style.display = 'block'
+              topping1Select.disabled = false
+              topping2Div.style.display = 'block'
+              topping2Select.disabled = false
+              topping3Div.style.display = 'none'
+              topping3Select.disabled = true
+              break
+            case '3 toppings':
+              topping1Div.style.display = 'block'
+              topping1Select.disabled = false
+              topping2Div.style.display = 'block'
+              topping2Select.disabled = false
+              topping3Div.style.display = 'block'
+              topping3Select.disabled = false
+              break
+            default:
+              topping1Div.style.display = 'none'
+              topping1Select.disabled = true
+              topping2Div.style.display = 'none'
+              topping2Select.disabled = true
+              topping3Div.style.display = 'none'
+              topping3Select.disabled = true
+          }
+        }
+      })
+
+    const topping1Div = document.querySelector('#topping-1'),
+      topping2Div = document.querySelector('#topping-2'),
+      topping3Div = document.querySelector('#topping-3'),
+      topping1Select = document.querySelector('#topping-options-1'),
+      topping2Select = document.querySelector('#topping-options-2'),
+      topping3Select = document.querySelector('#topping-options-3')
+
+    if (topping1Select) topping1Select.disabled = true
+    if (topping2Select) topping2Select.disabled = true
+    if (topping3Select) topping3Select.disabled = true
+
+    // Variable to detect if price was incremented due to
+    // extra cheese addition
+    const cheeseSection = document.querySelector('#cheese-section')
+    let priceIncremented = false
+
+    // Calculate price for small sizes, deselect extra cheese options
+    // for subs
+    const sizeSection = document.querySelector('#size-section')
+    if (sizeSection) {
+      document
+        .querySelector('#inline-size-small')
+        .addEventListener('change', () => {
+          calculatePrice()
+          if (cheeseSection) {
+            deselectExtraCheeseButtons()
+            priceIncremented = false
+          }
+        })
+
+      // Calculate prize for large sizes
+      document
+        .querySelector('#inline-size-large')
+        .addEventListener('change', () => {
+          calculatePrice()
+          if (cheeseSection) {
+            deselectExtraCheeseButtons()
+            priceIncremented = false
+          }
+        })
+    }
+
+    // Increment price for extra cheese with subs
+    const priceSection = document.querySelector('#set-price'),
+      hiddenPriceSection = document.querySelector('#hidden-price')
+    if (cheeseSection) {
+      document
+        .querySelector('#cheese-yes')
+        .addEventListener('change', (event) => {
+          if (!priceIncremented) {
+            let newPrice = (parseFloat(priceSection.textContent) + 0.5).toFixed(
+              2
+            )
+            priceSection.textContent = newPrice
+            hiddenPriceSection.value = newPrice
+            priceIncremented = true
+          }
+        })
+
+      // Decrement price for extra cheese with subs only if it was incremented before
+      document
+        .querySelector('#cheese-no')
+        .addEventListener('change', (event) => {
+          if (priceIncremented) {
+            let newPrice = (parseFloat(priceSection.textContent) - 0.5).toFixed(
+              2
+            )
+            priceSection.textContent = newPrice
+            hiddenPriceSection.value = newPrice
+            priceIncremented = false
+          }
+        })
+    }
+
+    /*
+     * This function grabs food id, addon id, & size id, makes an AJAX call
+     * and updates the price displayed on screen.
+     */
+    function calculatePrice() {
+      const addon = document.querySelector('#select-addon'),
+        size = document.querySelector('#size-section')
+      let addonId = addon.options[addon.selectedIndex].dataset.addonId,
+        sizeId = null,
+        xhr = new XMLHttpRequest()
+
+      // Add-on 18 is only served in large size.
+      // So, display an alert message, disable small radio button,
+      // & select the large one for add-on 18 only.
+      if (size) {
+        if (parseInt(addonId) === 18) {
+          document.querySelector('#inline-size-small').disabled = true
+          document.querySelector('#inline-size-large').checked = true
+          document.querySelector('.alert').style.display = 'block'
+        } else {
+          // Hide alert & enable small radio button for other add-ons
+          document.querySelector('.alert').style.display = 'none'
+          document.querySelector('#inline-size-small').disabled = false
+        }
+        sizeId = document.querySelector('#inline-size-small').checked ? 1 : 2
+      }
+
+      xhr.open('POST', '/tell_price')
+      // Set CSRF token in the request header
+      xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'))
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          let data = JSON.parse(xhr.responseText)
+          const priceArea = document.querySelector('#set-price')
+          // Update price on screen
+          if (priceArea) {
+            priceArea.textContent = data['price']
+            document.querySelector('#hidden-food-id').value = foodId
+            document.querySelector('#hidden-price').value = data['price']
+          }
+        } else {
+          Error('Price not available')
+        }
+      }
+      let data = new FormData()
+      data.append('foodId', foodId)
+      data.append('addonId', addonId)
+      data.append('sizeId', sizeId)
+      xhr.send(data)
+    }
+  }
+
+  // Delete order from cart
+  const cartContainer = document.querySelector('#cart-table')
+  if (cartContainer) {
+    document.querySelector('tbody').addEventListener('click', (event) => {
+      if (event.target.nodeName === 'svg' || event.target.nodeName === 'path') {
+        // Hide the table row
+        const orderRow = event.target.parentNode.parentNode.parentNode
+        orderRow.style.display = 'none'
+        // Send the order id to server to delete order
+        let orderId = orderRow.children[0].innerHTML,
+          xhr = new XMLHttpRequest()
+        xhr.open('POST', '/delete-order')
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'))
+        // Hide order confirmation form if the cart is empty
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            let remaingingOrders = JSON.parse(xhr.responseText)[
+              'remaining_orders'
+            ]
+            if (remaingingOrders === 0) {
+              document.querySelector('#order-form').style.display = 'none'
+            }
+          } else {
+            Error('Price not available')
+          }
+        }
+        let data = new FormData()
+        data.append('orderId', orderId)
+        xhr.send(data)
       }
     })
-
-  // Calculate price for small sizes
-  document
-    .querySelector('#inline-size-small')
-    .addEventListener('change', () => {
-      calculatePrice()
-      // Deselect extra cheese buttons
-      if (document.querySelector('#cheese-yes').checked)
-        document.querySelector('#cheese-yes').checked = false
-      if (document.querySelector('#cheese-no').checked)
-        document.querySelector('#cheese-no').checked = false
-    })
-
-  // Calculate prize for large sizes
-  document
-    .querySelector('#inline-size-large')
-    .addEventListener('change', () => {
-      calculatePrice()
-      // Deselect extra cheese buttons
-      if (document.querySelector('#cheese-yes').checked)
-        document.querySelector('#cheese-yes').checked = false
-      if (document.querySelector('#cheese-no').checked)
-        document.querySelector('#cheese-no').checked = false
-    })
-
-  // Increment price for extra cheese with subs
-  let priceIncremented = false
-  const priceSection = document.querySelector('#set-price')
-  document.querySelector('#cheese-yes').addEventListener('change', (event) => {
-    if (!priceIncremented) {
-      priceSection.textContent = (
-        parseFloat(priceSection.textContent) + parseFloat(event.target.value)
-      ).toFixed(2)
-      priceIncremented = true
-    }
-  })
-
-  // Decrement price for extra cheese with subs only if it was incremented before
-  document.querySelector('#cheese-no').addEventListener('change', (event) => {
-    if (priceIncremented) {
-      priceSection.textContent = (
-        parseFloat(priceSection.textContent) + parseFloat(event.target.value)
-      ).toFixed(2)
-      priceIncremented = false
-    }
-  })
+  }
 
   /*
-   * This function grabs food id, addon id, & size id, makes an AJAX call
-   * and updates the price displayed on screen.
+   * This function deselects extra cheese radio buttons
    */
-  function calculatePrice() {
-    const addon = document.querySelector('#select-addon'),
-      size = document.querySelector('#size-section')
-    let addonId = addon.options[addon.selectedIndex].dataset.addonId,
-      sizeId = null,
-      xhr = new XMLHttpRequest()
-
-    // Add-on 18 is only served in large size.
-    // So, display an alert message, disable small radio button,
-    // & select the large one for add-on 18 only.
-    if (size) {
-      if (parseInt(addonId) === 18) {
-        document.querySelector('#inline-size-small').disabled = true
-        document.querySelector('#inline-size-large').checked = true
-        document.querySelector('.alert').style.display = 'block'
-      } else {
-        // Hide alert & enable small radio button for other add-ons
-        document.querySelector('.alert').style.display = 'none'
-        document.querySelector('#inline-size-small').disabled = false
-      }
-      sizeId = document.querySelector('#inline-size-small').checked ? 1 : 2
-    }
-
-    xhr.open('POST', '/tell_price')
-    // Set CSRF token in the request header
-    xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'))
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        let data = JSON.parse(xhr.responseText)
-        const priceArea = document.querySelector('#set-price')
-        // Update price on screen
-        if (priceArea) {
-          priceArea.textContent = data['price']
-        }
-      } else {
-        Error('Price not available')
-      }
-    }
-    let data = new FormData()
-    data.append('foodId', foodId)
-    data.append('addonId', addonId)
-    data.append('sizeId', sizeId)
-    xhr.send(data)
+  function deselectExtraCheeseButtons() {
+    if (document.querySelector('#cheese-yes').checked)
+      document.querySelector('#cheese-yes').checked = false
+    if (document.querySelector('#cheese-no').checked)
+      document.querySelector('#cheese-no').checked = false
   }
 
   /*
