@@ -11,6 +11,9 @@ autopep8 = "*"
 [packages]
 django = "==3.0.7"
 django-crispy-forms = "*"
+django-environ = "*"
+gunicorn = "*"
+whitenoise = "*"
 
 [requires]
 python_version = "3.6"
