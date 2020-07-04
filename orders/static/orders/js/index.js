@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sizeId = document.querySelector('#inline-size-small').checked ? 1 : 2
       }
 
-      xhr.open('POST', '/tell_price')
+      xhr.open('POST', '/tell-price')
       // Set CSRF token in the request header
       xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'))
       xhr.onload = () => {
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#hidden-price').value = data['price']
           }
         } else {
-          Error('Price not available')
+          Error('Can not connect!')
         }
       }
       let data = new FormData()
@@ -178,12 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const cartContainer = document.querySelector('#cart-table')
   if (cartContainer) {
     document.querySelector('tbody').addEventListener('click', (event) => {
-      if (event.target.nodeName === 'svg' || event.target.nodeName === 'path') {
+      if (event.target.nodeName === 'path') {
         // Hide the table row
         const orderRow = event.target.parentNode.parentNode.parentNode
         orderRow.style.display = 'none'
         // Send the order id to server to delete order
-        let orderId = orderRow.children[0].innerHTML,
+        let orderId = orderRow.children[0].textContent,
           xhr = new XMLHttpRequest()
         xhr.open('POST', '/delete-order')
         xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'))
@@ -200,13 +200,43 @@ document.addEventListener('DOMContentLoaded', () => {
               document.querySelector('#price-row').style.display = 'none'
             }
           } else {
-            Error('Price not available')
+            Error('Can not connect!')
           }
         }
         let data = new FormData()
         data.append('orderId', orderId)
         xhr.send(data)
       }
+    })
+  }
+
+  // Order confirmaiton for admin
+  const ordersAdmin = document.querySelector('#orders-admin')
+  if (ordersAdmin) {
+    document.querySelector('tbody').addEventListener('click', (event) => {
+      // When confirm button is pressssed, send the order id to the server
+      // delete that order, disable the button and change status to completed
+      if (event.target.nodeName === 'BUTTON') {
+        const orderRow = event.target.parentNode.parentNode
+        let orderId = orderRow.children[0].textContent,
+          xhr = new XMLHttpRequest()
+        xhr.open('POST', '/confirm-order-admin')
+        xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'))
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            orderRow.children[9].textContent = 'Completed'
+            orderRow.children[10].children[0].disabled = true
+          } else {
+            Error('Error confirming order')
+          }
+        }
+        let data = new FormData()
+        data.append('orderId', orderId)
+        xhr.send(data)
+      }
+      //
+      const rows = document.querySelectorAll('tr')
+      console.log(rows)
     })
   }
 

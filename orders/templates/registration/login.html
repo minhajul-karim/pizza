@@ -9,6 +9,9 @@ Log In - Pizza & Subs
 {% block content %}
 <div class="auth-forms">
     <h1 class="display-3 mt-5 mb-3">Log In</h1>
+    {% if form.errors %}
+    <p class="mb-2" style="color: red;">Your username and password didn't match. Please try again.</p>
+    {% endif %}
     <form method="POST">
         {% csrf_token %}
         {{ form|crispy }}

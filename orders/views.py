@@ -2,7 +2,7 @@
 
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from .forms import SignupForm
 from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
 from django.contrib.auth.models import User
@@ -158,7 +158,8 @@ def my_orders_view(request):
 
     We display all orders that were submitted and are pending.
     """
-    orders = Order.objects.filter(user=request.user.id, status=2)
+    orders = Order.objects.filter(
+        user=request.user.id).order_by("-id").exclude(status=1)
     orders_count = Order.objects.filter(user=request.user.id, status=1).count()
     context = {
         "orders": orders,
@@ -180,7 +181,7 @@ def delete_order(request):
     """Delete an order."""
     if request.method == "POST":
         order_id = request.POST["orderId"]
-        Order.objects.get(id=order_id).delete()
+        Order.objects.get(pk=order_id).delete()
         remaining_orders = Order.objects.filter(
             user=request.user.id, status=1)
         total_price = 0
@@ -190,3 +191,19 @@ def delete_order(request):
                              "total_price": total_price})
     else:
         return JsonResponse({"status": "Invalid request."})
+
+
+def order_admin_view(request):
+    """View admin interface of orders."""
+    orders = Order.objects.order_by("-id").exclude(status=1)
+    return render(request, "orders/admin_orders.html", {"orders": orders})
+
+
+def order_confirmation_admin(request):
+    """Order confirmaiton by supersuer."""
+    if request.method == "POST":
+        order_id = request.POST["orderId"]
+        order = Order.objects.get(pk=order_id)
+        order.status = Status.objects.get(pk=3)
+        order.save()
+        return HttpResponse("a")

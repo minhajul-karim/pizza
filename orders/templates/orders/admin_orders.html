@@ -2,13 +2,13 @@
 {% load static %}
 
 {% block title %}
-Cart - Pizza & Subs
+Orders - Pizza & Subs
 {% endblock %}
 
 {% block content %}
 {% if orders %}
-<div class="container-fluid mt-5 text-center" id="cart-table">
-    <div class="table-responsive">
+<div class="container-fluid mt-5" id="orders-admin">
+    <div class="table-responsive text-center">
         <table class="table">
             <thead>
                 <tr>
@@ -39,39 +39,20 @@ Cart - Pizza & Subs
                     <td>{{ order.price }}</td>
                     <td>{{ order.status }}</td>
                     <td class="text-center cross-sign" style="cursor: pointer;">
-                        <svg id="i-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"
-                            fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round"
-                            stroke-width="10">
-                            <path d="M2 30 L30 2 M30 30 L2 2" />
-                        </svg>
+                        {% if order.status|stringformat:"s" == "Completed" %}
+                        <button type="button" class="btn btn-primary btn-sm" disabled>Complete</button>
+                        {% else %}
+                        <button type="button" class="btn btn-primary btn-sm">Complete</button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
-                <tr id="price-row">
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>
-                        <p class="lead font-weight-bold">Total: $<span id="total-price">{{ total_price }}</span></p>
-                    </td>
-                    <td></td>
-                    <td></td>
-                </tr>
             </tbody>
         </table>
     </div>
-    <form id="order-form" action="/confirm-order" method="POST">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary btn-lg">Confirm order</button>
-    </form>
 </div>
 {% else %}
-<p class="lead text-center mt-5">Your cart is currently empty!</p>
+<p class="lead text-center mt-5">No orders left!</p>
 {% endif %}
 <script src="{% static 'orders/js/index.js' %}"></script>
 {% endblock %}
