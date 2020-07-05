@@ -66,7 +66,7 @@ Cart - Pizza & Subs
             </tbody>
         </table>
     </div>
-    <form id="order-form" action="/confirm-order" method="POST">
+    <form id="order-form" action="/confirm-order" method="POST" class="text-center">
         {% csrf_token %}
         <button type="submit" class="btn btn-primary btn-lg">Confirm order</button>
     </form>
