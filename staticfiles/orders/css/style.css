@@ -1,0 +1,125 @@
+/*!
+ * Start Bootstrap - Shop Homepage (https://startbootstrap.com/template-overviews/shop-homepage)
+ * Copyright 2013-2019 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-shop-homepage/blob/master/LICENSE)
+ */
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+ul,
+li {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding-top: 56px;
+}
+
+#page-container {
+  min-height: calc(100vh - 56px);
+  position: relative;
+}
+
+#content-wrap {
+  padding-bottom: 100px;
+}
+
+.navbar-nav a {
+  color: #fff !important;
+}
+
+.card-title a {
+  text-decoration: none;
+  color: #000;
+}
+
+.alert {
+  display: none;
+}
+
+#topping-1,
+#topping-2,
+#topping-3 {
+  display: none;
+}
+
+/* #cheese-section, */
+#hidden-food-id,
+#hidden-price {
+  display: none;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+}
+
+footer ul {
+  margin: 13px 0 0 0;
+}
+
+footer a {
+  color: #fff;
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.auth-forms {
+  width: 500px;
+  margin: 0 auto;
+}
+
+/* Hide default form hints */
+#hint_id_username,
+#hint_id_password1,
+#hint_id_password2 {
+  display: none;
+}
+
+/* Hide unnecessary card items of homepage */
+.card-footer,
+.card-text,
+.card-body h5 {
+  display: none;
+}
+
+/* Product page */
+#product-image-1,
+#product-image-2 {
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+}
+
+#product-image-1 img,
+#product-image-2 img {
+  width: 100%;
+}
+
+#product-image-1 {
+  display: none;
+}
+
+@media all and (max-width: 767px) {
+  .auth-forms {
+    width: 300px;
+  }
+  #product-image-1 {
+    display: block;
+  }
+  #product-image-2 {
+    display: none;
+  }
+}
