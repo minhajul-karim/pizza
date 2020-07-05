@@ -115,7 +115,7 @@ class Order(models.Model):
                                 decimal_places=2)
     status = models.ForeignKey(Status,
                                on_delete=models.CASCADE,
-                               default="not confirmed")
+                               default=1)
 
     def __str__(self):
         """Object representation of Order class."""

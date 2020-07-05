@@ -14,6 +14,7 @@ django-crispy-forms = "*"
 django-environ = "*"
 gunicorn = "*"
 whitenoise = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.6"
