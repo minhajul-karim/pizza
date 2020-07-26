@@ -35,7 +35,7 @@ def signup_view(request):
     return render(request, "orders/sign_up.html", {"form": form})
 
 
-def product_view(request, food_id):
+def product_view(request, slug, food_id):
     """View product page.
 
     We get the food id via argument and grab menu for that food.
