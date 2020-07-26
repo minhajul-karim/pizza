@@ -101,13 +101,6 @@ DATABASES = {
     }
 }
 
-# print("********")
-# print(env("DATABASE"))
-# print(env("USERNAME"))
-# print(env("PASSWORD"))
-# print(env("HOST"))
-# print("********")
-
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
