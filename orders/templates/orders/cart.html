@@ -7,8 +7,8 @@ Cart - Pizza & Subs
 
 {% block content %}
 {% if orders %}
-<div class="container-fluid" id="cart-table">
-    <h1 class="mb-3">Cart</h1>
+<div class="container-fluid d-flex flex-column" id="cart-table">
+    <h1 class="my-3">Cart</h1>
     <div class="table-responsive text-center">
         <table class="table">
             <thead>
@@ -66,10 +66,7 @@ Cart - Pizza & Subs
             </tbody>
         </table>
     </div>
-    <form id="order-form" action="/confirm-order" method="POST" class="text-center">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary btn-lg">Confirm order</button>
-    </form>
+    <a href="/checkout" class="btn btn-primary btn-lg align-self-end">Checkout</a>
 </div>
 {% else %}
 <p class="lead text-center mt-5">Your cart is currently empty!</p>

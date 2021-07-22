@@ -1,13 +1,27 @@
 """View of index page."""
 
+import environ
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from .forms import SignupForm
+from .forms import SignupForm, CheckoutForm
 from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
 from django.contrib.auth.models import User
+from sslcommerz_lib import SSLCOMMERZ
+from django.views.decorators.csrf import csrf_exempt
 
+# Read env file
+env = environ.Env()
+environ.Env.read_env()
 
+# SSLCOMMERZ config
+sslcz = SSLCOMMERZ({
+    "store_id": env("STORE_ID"),
+    "store_pass": env("STORE_PASSWORD"),
+    "issandbox": True
+})
+
+@csrf_exempt
 def index(request):
     """Home page."""
     foods = FoodItem.objects.all()
@@ -132,7 +146,7 @@ def add_to_cart(request):
             return redirect("/login")
     return redirect("/")
 
-
+@csrf_exempt
 def cart_view(request):
     """
     View cart items.
@@ -144,10 +158,12 @@ def cart_view(request):
     for order in orders:
         total_price += order.price
     orders_count = orders.count()
+    request.session["total_price"] = str(total_price)
+    request.session["num_of_item"] = orders_count
     context = {
         "orders": orders,
         "orders_count": orders_count,
-        "total_price": total_price,
+        "total_price": total_price
     }
     return render(request, "orders/cart.html", context)
 
@@ -168,13 +184,51 @@ def my_orders_view(request):
     return render(request, "orders/my_orders.html", context)
 
 
-def confirm_order_view(request):
-    """Order confirmation."""
-    orders_not_confirmed = Order.objects.filter(user=request.user.id, status=1)
-    for order in orders_not_confirmed:
-        order.status = Status.objects.get(pk=2)
-        order.save()
-    return redirect("/")
+def checkout(request):
+    """Checkout."""
+    if request.method == "POST":
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            num_of_item = request.session["num_of_item"]
+            total_amount = request.session["total_price"]
+            email = form.cleaned_data["email"]
+            phone = form.cleaned_data["phone"]
+            address = form.cleaned_data["address"]
+            response = sslcz.createSession({
+                'total_amount': total_amount,
+                'currency': "USD",
+                'tran_id': "tran_12345",
+                'success_url': "http://127.0.0.1:8000/successful-payment", # if transaction is succesful, user will be redirected here
+                'fail_url': "http://127.0.0.1:8000/unsuccessful-payment", # if transaction is failed, user will be redirected here
+                'cancel_url': "http://127.0.0.1:8000/cart", # after user cancels the transaction, will be redirected here
+                'emi_option': "0",
+                'cus_name': "test",
+                'cus_email': email,
+                'cus_phone': phone,
+                'cus_add1': address,
+                'cus_city': "Dhaka",
+                'cus_country': "Bangladesh",
+                'shipping_method': "NO",
+                'multi_card_name': "",
+                'num_of_item': num_of_item,
+                'product_name': "Test",
+                'product_category': "Test Category",
+                'product_profile': "general",
+            })
+            orders_not_confirmed = Order.objects.filter(user=request.user.id, status=1)
+            for order in orders_not_confirmed:
+                order.status = Status.objects.get(pk=2)
+                order.save()
+            return redirect(response['GatewayPageURL'])
+        else:
+            return render(request, "orders/checkout.html", {"form": form})
+    else:
+        form = CheckoutForm()
+        context = {
+            "total_price": request.session["total_price"],
+            "form": form
+        }
+        return render(request, "orders/checkout.html", context)
 
 
 def delete_order(request):
@@ -198,7 +252,6 @@ def order_admin_view(request):
     orders = Order.objects.order_by("-id").exclude(status=1)
     return render(request, "orders/admin_orders.html", {"orders": orders})
 
-
 def order_confirmation_admin(request):
     """Order confirmaiton by supersuer."""
     if request.method == "POST":
@@ -207,3 +260,15 @@ def order_confirmation_admin(request):
         order.status = Status.objects.get(pk=3)
         order.save()
         return HttpResponse("a")
+
+@csrf_exempt
+def successful_payment(request):
+    """View to be displayed when payment is successful"""
+    request.session["total_price"] = 0
+    return render(request, "orders/success.html")
+
+@csrf_exempt
+def unsuccessful_payment(request):
+    """View to be displayed when payment is unsuccessful"""
+    return render(request, "orders/failure.html")
+
