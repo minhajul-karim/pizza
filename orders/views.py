@@ -258,6 +258,7 @@ def successful_payment_listener(request):
                 for order in orders_not_confirmed:
                     order.status = Status.objects.get(pk=2)
                     order.save()
+                request.session["prev_page_redirect"] = True
                 return redirect("/successful-payment-view")
             else:
                 return redirect("/unsuccessful-payment-view")
@@ -269,22 +270,31 @@ def successful_payment_listener(request):
             return redirect("/checkout?" + urlencode({"msg": "You didn't choose any payment channel"}))
         else:
             return redirect("/checkout?" + urlencode({"msg": "Payment Timeout"}))
-    return redirect("/checkout")
+    return redirect("/")
 
 def successful_payment_view(request):
     """View to be displayed when payment is successful"""
-    return render(request, "orders/success.html")
+    if "prev_page_redirect" in request.session:
+        # Proceed further only if we were redirected here
+        del request.session["prev_page_redirect"]
+        return render(request, "orders/success.html")
+    return redirect("/")
 
 @csrf_exempt
 def unsuccessful_payment_listener(request):
     """Listener for unsuccessful payment"""
     if request.method == "POST":
+        request.session["prev_page_redirect"] = True
         return redirect("/unsuccessful-payment-view")
-    return render(request, "orders/failure.html")
+    return redirect("/")
 
 def unsuccessful_payment_view(request):
     """View to be displayed when payment is unsuccessful"""
-    return render(request, "orders/failure.html")
+    if "prev_page_redirect" in request.session:
+        # Proceed further only if we were redirected here
+        del request.session["prev_page_redirect"]
+        return render(request, "orders/failure.html")
+    return redirect("/")
 
 def delete_order(request):
     """Delete an order."""

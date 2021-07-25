@@ -7,13 +7,15 @@ Unsuccessful payment - Pizza & Subs
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <div class="payment-status-card">
-    <div class="payment-status-circle">
-        <i class="payment-status-icon">⊖</i>
-    </div>
-        <h1>Failed</h1> 
-        <p>Sorry! Your payment was unsuccessful!</p>
-        <br />
-        <a href="/checkout">Try again</a>
+    <div class="card-container d-flex justify-content-center align-items-center text-center mt-5">
+        <div class="payment-status-card">
+        <div class="payment-status-circle mb-2">
+            <i class="payment-status-icon payment-status-icon-failure">⊖</i>
+        </div>
+            <h1 class="failure-header">Failed</h1> 
+            <p>Sorry! Your payment was unsuccessful!</p>
+            <br />
+            <a href="/checkout">Try again</a>
+        </div>
     </div>
 {% endblock %}

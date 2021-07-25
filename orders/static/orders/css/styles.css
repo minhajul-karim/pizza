@@ -115,12 +115,22 @@ footer a:hover {
 }
 
 /* Payment status pages */
+/* .card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
 .payment-status-card h1 {
-  color: #ec0653;
   font-family: "Nunito Sans", "Helvetica Neue", sans-serif;
   font-weight: 900;
   font-size: 40px;
   margin-bottom: 10px;
+}
+.success-header {
+  color: rgb(10, 155, 10);
+}
+.failure-header {
+  color: #ec0653;
 }
 .payment-status-card p {
   color: #404F5E;
@@ -129,9 +139,14 @@ footer a:hover {
   margin: 0;
 }
 .payment-status-icon {
-  color: #eb0827;
   font-size: 100px;
   line-height: 200px;
+}
+.payment-status-icon-failure {
+  color: #eb0827;
+}
+.payment-status-icon-success {
+  color: rgb(10, 155, 10);
 }
 .payment-status-card {
   background: white;
