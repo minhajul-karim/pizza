@@ -1,60 +1,19 @@
-<html>
-  <head>
-    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,400i,700,900&display=swap" rel="stylesheet">
-    <title>Payment Successful! - Pizza & Subs</title>
-  </head>
-    <style>
-      body {
-        text-align: center;
-        padding: 40px 0;
-        background: #EBF0F5;
-      }
-        h1 {
-          color: #ec0653;
-          font-family: "Nunito Sans", "Helvetica Neue", sans-serif;
-          font-weight: 900;
-          font-size: 40px;
-          margin-bottom: 10px;
-        }
-        p {
-          color: #404F5E;
-          font-family: "Nunito Sans", "Helvetica Neue", sans-serif;
-          font-size:20px;
-          margin: 0;
-        }
-      i {
-        color: #eb0827;
-        font-size: 100px;
-        line-height: 200px;
-      }
-      .card {
-        background: white;
-        padding: 60px;
-        border-radius: 4px;
-        box-shadow: 0 2px 3px #C8D0D8;
-        display: inline-block;
-        margin: 0 auto;
-      }
-      .circle {
-        border-radius: 200px; 
-        height: 150px; 
-        width: 150px; 
-        background: #F8FAF5; 
-        margin: 0 auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-    </style>
-    <body>
-      <div class="card">
-      <div class="circle">
-        <i class="checkmark">⊖</i>
-      </div>
+{% extends "orders/base.html" %}
+
+{% block title %}
+Unsuccessful payment - Pizza & Subs
+{% endblock %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="payment-status-card">
+    <div class="payment-status-circle">
+        <i class="payment-status-icon">⊖</i>
+    </div>
         <h1>Failed</h1> 
         <p>Sorry! Your payment was unsuccessful!</p>
         <br />
         <a href="/checkout">Try again</a>
-      </div>
-    </body>
-</html>
+    </div>
+{% endblock %}

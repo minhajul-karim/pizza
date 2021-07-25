@@ -16,6 +16,7 @@ gunicorn = "*"
 whitenoise = "*"
 psycopg2 = "==2.8.6"
 sslcommerz-lib = "*"
+requests = "*"
 
 [requires]
 python_version = "3.6"

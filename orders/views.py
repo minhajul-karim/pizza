@@ -1,14 +1,17 @@
 """View of index page."""
 
+import requests
 import environ
 from django.http import HttpResponse, JsonResponse
+from django.utils.http import urlencode
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import SESSION_KEY, authenticate, login
 from .forms import SignupForm, CheckoutForm
 from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
 from django.contrib.auth.models import User
 from sslcommerz_lib import SSLCOMMERZ
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 # Read env file
 env = environ.Env()
@@ -188,6 +191,7 @@ def checkout(request):
     """Checkout."""
     if request.method == "POST":
         form = CheckoutForm(request.POST)
+        # Get session key if form is valid
         if form.is_valid():
             num_of_item = request.session["num_of_item"]
             total_amount = request.session["total_price"]
@@ -198,8 +202,8 @@ def checkout(request):
                 'total_amount': total_amount,
                 'currency': "USD",
                 'tran_id': "tran_12345",
-                'success_url': "http://127.0.0.1:8000/successful-payment", # if transaction is succesful, user will be redirected here
-                'fail_url': "http://127.0.0.1:8000/unsuccessful-payment", # if transaction is failed, user will be redirected here
+                'success_url': "http://127.0.0.1:8000/successful-payment-listener", # if transaction is succesful, user will be redirected here
+                'fail_url': "http://127.0.0.1:8000/unsuccessful-payment-listener", # if transaction is failed, user will be redirected here
                 'cancel_url': "http://127.0.0.1:8000/cart", # after user cancels the transaction, will be redirected here
                 'emi_option': "0",
                 'cus_name': "test",
@@ -215,21 +219,72 @@ def checkout(request):
                 'product_category': "Test Category",
                 'product_profile': "general",
             })
-            orders_not_confirmed = Order.objects.filter(user=request.user.id, status=1)
-            for order in orders_not_confirmed:
-                order.status = Status.objects.get(pk=2)
-                order.save()
-            return redirect(response['GatewayPageURL'])
+            # Save the session key if needed and redirect to PG page
+            if response["status"] == "SUCCESS":
+                return redirect(response['GatewayPageURL'])
+            else:
+                messages.error(request, "Sorry, there was an error. Please try again.")
+                form = CheckoutForm()
+                return redirect("/checkout")
         else:
             return render(request, "orders/checkout.html", {"form": form})
-    else:
-        form = CheckoutForm()
-        context = {
-            "total_price": request.session["total_price"],
-            "form": form
-        }
-        return render(request, "orders/checkout.html", context)
+    form = CheckoutForm()
+    # List of values received from query parameters
+    msgs = request.GET.values() if len(request.GET.keys()) > 0 else []
+    context = {
+        "total_price": request.session["total_price"] if "total_price" in request.session else 0,
+        "form": form,
+        "messages": msgs
+    }
+    return render(request, "orders/checkout.html", context)
 
+@csrf_exempt
+def successful_payment_listener(request):
+    """Listener for successful payment"""
+    if request.method == "POST":
+        # Validate IPN POST request
+        if request.POST["status"] == "VALID":
+            val_id = request.POST["val_id"]
+            payload = {
+                "val_id": val_id,
+                "store_id": env("STORE_ID"),
+                "store_passwd": env("STORE_PASSWORD")
+            }
+            response = requests.get("https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php", params=payload).json()
+            # Validate order
+            if (response["status"] == "VALID" or response["status"] == "VALIDATED"):
+                # Confirm orders
+                orders_not_confirmed = Order.objects.filter(user=request.user.id, status=1)
+                for order in orders_not_confirmed:
+                    order.status = Status.objects.get(pk=2)
+                    order.save()
+                return redirect("/successful-payment-view")
+            else:
+                return redirect("/unsuccessful-payment-view")
+        elif request.POST["status"] == "FAILED":
+            return redirect("/checkout?" + urlencode({"msg": "Your transaction is declined by your Bank"}))
+        elif request.POST["status"] == "CANCELLED":
+            return redirect("/checkout?" + urlencode({"msg": "You cancelled the transaction"}))
+        elif request.POST["status"] == "UNATTEMPTED":
+            return redirect("/checkout?" + urlencode({"msg": "You didn't choose any payment channel"}))
+        else:
+            return redirect("/checkout?" + urlencode({"msg": "Payment Timeout"}))
+    return redirect("/checkout")
+
+def successful_payment_view(request):
+    """View to be displayed when payment is successful"""
+    return render(request, "orders/success.html")
+
+@csrf_exempt
+def unsuccessful_payment_listener(request):
+    """Listener for unsuccessful payment"""
+    if request.method == "POST":
+        return redirect("/unsuccessful-payment-view")
+    return render(request, "orders/failure.html")
+
+def unsuccessful_payment_view(request):
+    """View to be displayed when payment is unsuccessful"""
+    return render(request, "orders/failure.html")
 
 def delete_order(request):
     """Delete an order."""
@@ -259,16 +314,7 @@ def order_confirmation_admin(request):
         order = Order.objects.get(pk=order_id)
         order.status = Status.objects.get(pk=3)
         order.save()
+        # TODO: WHAT IS THIS?
         return HttpResponse("a")
 
-@csrf_exempt
-def successful_payment(request):
-    """View to be displayed when payment is successful"""
-    request.session["total_price"] = 0
-    return render(request, "orders/success.html")
-
-@csrf_exempt
-def unsuccessful_payment(request):
-    """View to be displayed when payment is unsuccessful"""
-    return render(request, "orders/failure.html")
 
