@@ -1,17 +1,18 @@
-"""View of index page."""
+"""Definition of all views."""
 
-import requests
 import environ
-from django.http import HttpResponse, JsonResponse
-from django.utils.http import urlencode
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from .forms import SignupForm, CheckoutForm
-from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
-from django.contrib.auth.models import User
-from sslcommerz_lib import SSLCOMMERZ
-from django.views.decorators.csrf import csrf_exempt
+import requests
 from django.contrib import messages
+from sslcommerz_lib import SSLCOMMERZ
+from django.utils.http import urlencode
+from django.contrib.auth.models import User
+from .forms import SignupForm, CheckoutForm
+from django.shortcuts import render, redirect
+from django.http import HttpResponse, JsonResponse
+from django.contrib.auth import authenticate, login
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
 
 # Read env file
 env = environ.Env()
@@ -25,7 +26,6 @@ sslcz = SSLCOMMERZ({
 })
 
 
-@csrf_exempt
 def index(request):
     """Home page."""
     foods = FoodItem.objects.all()
@@ -116,38 +116,36 @@ def price(request):
         return JsonResponse({"status": "Invalid request."})
 
 
+@login_required
 def add_to_cart(request):
     """Add to cart."""
     if request.method == "POST":
-        if request.user.is_authenticated:
-            food_id = request.POST["food-id"]
-            addon = request.POST["addon"]
-            topping_1 = Topping.objects.get(
-                topping_name=request.POST["topping-1"]) if "topping-1" in request.POST else None
-            topping_2 = Topping.objects.get(
-                topping_name=request.POST["topping-2"]) if "topping-2" in request.POST else None
-            topping_3 = Topping.objects.get(
-                topping_name=request.POST["topping-3"]) if "topping-3" in request.POST else None
-            size = Size.objects.get(
-                size_name=request.POST["size"]) if "size" in request.POST else None
-            price = request.POST["price"]
-            extra_cheese = None
-            if "cheese" in request.POST and request.POST.get("cheese") == "Y":
-                extra_cheese = request.POST["cheese"]
-            # Save data into db
-            ord = Order(user=User.objects.get(pk=request.user.id),
-                        food=FoodItem.objects.get(pk=food_id),
-                        addon=AddOn.objects.get(addon_name=addon),
-                        topping1=topping_1,
-                        topping2=topping_2,
-                        topping3=topping_3,
-                        extra_cheese=extra_cheese,
-                        size=size,
-                        price=price,
-                        status=Status.objects.get(pk=1))
-            ord.save()
-        else:
-            return redirect("/login")
+        food_id = request.POST["food-id"]
+        addon = request.POST["addon"]
+        topping_1 = Topping.objects.get(
+            topping_name=request.POST["topping-1"]) if "topping-1" in request.POST else None
+        topping_2 = Topping.objects.get(
+            topping_name=request.POST["topping-2"]) if "topping-2" in request.POST else None
+        topping_3 = Topping.objects.get(
+            topping_name=request.POST["topping-3"]) if "topping-3" in request.POST else None
+        size = Size.objects.get(
+            size_name=request.POST["size"]) if "size" in request.POST else None
+        price = request.POST["price"]
+        extra_cheese = None
+        if "cheese" in request.POST and request.POST.get("cheese") == "Y":
+            extra_cheese = request.POST["cheese"]
+        # Save data into db
+        current_order = Order(user=User.objects.get(pk=request.user.id),
+                              food=FoodItem.objects.get(pk=food_id),
+                              addon=AddOn.objects.get(addon_name=addon),
+                              topping1=topping_1,
+                              topping2=topping_2,
+                              topping3=topping_3,
+                              extra_cheese=extra_cheese,
+                              size=size,
+                              price=price,
+                              status=Status.objects.get(pk=1))
+        current_order.save()
     return redirect("/")
 
 
@@ -173,6 +171,7 @@ def cart_view(request):
     return render(request, "orders/cart.html", context)
 
 
+@login_required
 def my_orders_view(request):
     """
     View cart items.
@@ -189,9 +188,9 @@ def my_orders_view(request):
     return render(request, "orders/my_orders.html", context)
 
 
+@login_required
 def checkout(request):
     """Checkout."""
-    print(request.user.id)
     if request.method == "POST":
         form = CheckoutForm(request.POST)
         # Get session key if form is valid
@@ -311,7 +310,7 @@ def unsuccessful_payment_view(request):
 
 def delete_order(request):
     """Delete an order."""
-    if request.method == "POST":
+    if request.user.is_authenticated and request.method == "POST":
         order_id = request.POST["orderId"]
         Order.objects.get(pk=order_id).delete()
         remaining_orders = Order.objects.filter(
@@ -327,16 +326,18 @@ def delete_order(request):
 
 def order_admin_view(request):
     """View admin interface of orders."""
-    orders = Order.objects.order_by("-id").exclude(status=1)
-    return render(request, "orders/admin_orders.html", {"orders": orders})
+    if request.user.is_superuser:
+        orders = Order.objects.order_by("-id").exclude(status=1)
+        return render(request, "orders/admin_orders.html", {"orders": orders})
+    return redirect("/")
 
 
 def order_confirmation_admin(request):
     """Order confirmaiton by supersuer."""
-    if request.method == "POST":
+    if request.user.is_superuser and request.method == "POST":
         order_id = request.POST["orderId"]
         order = Order.objects.get(pk=order_id)
         order.status = Status.objects.get(pk=3)
         order.save()
-        # TODO: WHAT IS THIS?
-        return HttpResponse("a")
+        return JsonResponse({"updated": True})
+    return redirect("/")
