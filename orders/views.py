@@ -5,7 +5,7 @@ import environ
 from django.http import HttpResponse, JsonResponse
 from django.utils.http import urlencode
 from django.shortcuts import render, redirect
-from django.contrib.auth import SESSION_KEY, authenticate, login
+from django.contrib.auth import authenticate, login
 from .forms import SignupForm, CheckoutForm
 from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
 from django.contrib.auth.models import User
@@ -23,6 +23,7 @@ sslcz = SSLCOMMERZ({
     "store_pass": env("STORE_PASSWORD"),
     "issandbox": True
 })
+
 
 @csrf_exempt
 def index(request):
@@ -149,6 +150,7 @@ def add_to_cart(request):
             return redirect("/login")
     return redirect("/")
 
+
 @csrf_exempt
 def cart_view(request):
     """
@@ -189,6 +191,7 @@ def my_orders_view(request):
 
 def checkout(request):
     """Checkout."""
+    print(request.user.id)
     if request.method == "POST":
         form = CheckoutForm(request.POST)
         # Get session key if form is valid
@@ -202,9 +205,12 @@ def checkout(request):
                 'total_amount': total_amount,
                 'currency': "USD",
                 'tran_id': "tran_12345",
-                'success_url': "http://127.0.0.1:8000/successful-payment-listener", # if transaction is succesful, user will be redirected here
-                'fail_url': "http://127.0.0.1:8000/unsuccessful-payment-listener", # if transaction is failed, user will be redirected here
-                'cancel_url': "http://127.0.0.1:8000/cart", # after user cancels the transaction, will be redirected here
+                # if transaction is succesful, user will be redirected here
+                'success_url': "http://127.0.0.1:8000/successful-payment-listener",
+                # if transaction is failed, user will be redirected here
+                'fail_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
+                # after user cancels the transaction, will be redirected here
+                'cancel_url': "http://127.0.0.1:8000/cart",
                 'emi_option': "0",
                 'cus_name': "test",
                 'cus_email': email,
@@ -223,7 +229,8 @@ def checkout(request):
             if response["status"] == "SUCCESS":
                 return redirect(response['GatewayPageURL'])
             else:
-                messages.error(request, "Sorry, there was an error. Please try again.")
+                messages.error(
+                    request, "Sorry, there was an error. Please try again.")
                 form = CheckoutForm()
                 return redirect("/checkout")
         else:
@@ -238,6 +245,7 @@ def checkout(request):
     }
     return render(request, "orders/checkout.html", context)
 
+
 @csrf_exempt
 def successful_payment_listener(request):
     """Listener for successful payment"""
@@ -250,51 +258,56 @@ def successful_payment_listener(request):
                 "store_id": env("STORE_ID"),
                 "store_passwd": env("STORE_PASSWORD")
             }
-            response = requests.get("https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php", params=payload).json()
             # Validate order
-            if (response["status"] == "VALID" or response["status"] == "VALIDATED"):
-                # Confirm orders
-                orders_not_confirmed = Order.objects.filter(user=request.user.id, status=1)
-                for order in orders_not_confirmed:
-                    order.status = Status.objects.get(pk=2)
-                    order.save()
-                request.session["prev_page_redirect"] = True
+            url = "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
+            response = requests.get(url, params=payload).json()
+            if (response["status"] ==
+                    "VALID" or response["status"] == "VALIDATED"):
                 return redirect("/successful-payment-view")
             else:
                 return redirect("/unsuccessful-payment-view")
         elif request.POST["status"] == "FAILED":
-            return redirect("/checkout?" + urlencode({"msg": "Your transaction is declined by your Bank"}))
+            return redirect(
+                "/checkout?" + urlencode({"msg": "Your transaction is declined by your Bank"}))
         elif request.POST["status"] == "CANCELLED":
-            return redirect("/checkout?" + urlencode({"msg": "You cancelled the transaction"}))
+            return redirect(
+                "/checkout?" + urlencode({"msg": "You cancelled the transaction"}))
         elif request.POST["status"] == "UNATTEMPTED":
-            return redirect("/checkout?" + urlencode({"msg": "You didn't choose any payment channel"}))
+            return redirect(
+                "/checkout?" + urlencode({"msg": "You didn't choose any payment channel"}))
         else:
-            return redirect("/checkout?" + urlencode({"msg": "Payment Timeout"}))
+            return redirect(
+                "/checkout?" + urlencode({"msg": "Payment Timeout"}))
     return redirect("/")
+
 
 def successful_payment_view(request):
     """View to be displayed when payment is successful"""
-    if "prev_page_redirect" in request.session:
-        # Proceed further only if we were redirected here
-        del request.session["prev_page_redirect"]
+    if request.user.is_authenticated:
+        # Confirm orders
+        new_orders = Order.objects.filter(
+            user=request.user.id, status=1)
+        for order in new_orders:
+            order.status = Status.objects.get(pk=2)
+        Order.objects.bulk_update(new_orders, ["status"])
         return render(request, "orders/success.html")
     return redirect("/")
+
 
 @csrf_exempt
 def unsuccessful_payment_listener(request):
     """Listener for unsuccessful payment"""
     if request.method == "POST":
-        request.session["prev_page_redirect"] = True
         return redirect("/unsuccessful-payment-view")
     return redirect("/")
 
+
 def unsuccessful_payment_view(request):
     """View to be displayed when payment is unsuccessful"""
-    if "prev_page_redirect" in request.session:
-        # Proceed further only if we were redirected here
-        del request.session["prev_page_redirect"]
+    if request.user.is_authenticated:
         return render(request, "orders/failure.html")
     return redirect("/")
+
 
 def delete_order(request):
     """Delete an order."""
@@ -317,6 +330,7 @@ def order_admin_view(request):
     orders = Order.objects.order_by("-id").exclude(status=1)
     return render(request, "orders/admin_orders.html", {"orders": orders})
 
+
 def order_confirmation_admin(request):
     """Order confirmaiton by supersuer."""
     if request.method == "POST":
@@ -326,5 +340,3 @@ def order_confirmation_admin(request):
         order.save()
         # TODO: WHAT IS THIS?
         return HttpResponse("a")
-
-

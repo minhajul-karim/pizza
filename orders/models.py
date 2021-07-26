@@ -119,4 +119,4 @@ class Order(models.Model):
 
     def __str__(self):
         """Object representation of Order class."""
-        return f"{self.food} - {self.price}"
+        return f"{self.food} - {self.price} - {self.status}"
