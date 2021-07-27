@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const productCotainer = document.querySelector("#product-container");
   if (productCotainer) {
-    let foodId = parseInt(window.location.pathname.split("/").pop());
+    const foodId = parseInt(window.location.pathname.split("/").pop());
 
     // Calculate price on page load
     calculatePrice();
@@ -165,10 +165,11 @@ document.addEventListener("DOMContentLoaded", () => {
           // Update price on screen
           if (priceArea) {
             priceArea.textContent = data["price"];
-            document.querySelector("#hidden-food-id").value =
+            document.getElementById("hidden-food-id").value =
               foodId;
-            document.querySelector("#hidden-price").value =
+            document.getElementById("hidden-price").value =
               data["price"];
+            document.getElementById("add-to-cart-btn").disabled = false;
           }
         } else {
           Error("Can not connect!");
@@ -188,9 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("tbody").addEventListener("click", (event) => {
       if (event.target.nodeName === "path") {
         // Send the order id to server to delete order
-        const orderRow =
-          event.target.parentNode.parentNode.parentNode;
-        const orderId = orderRow.children[0].textContent
+        const orderRow = event.target.parentNode.parentNode.parentNode;
+        const orderId = orderRow.children[0].textContent;
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/delete-order");
         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
@@ -204,7 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector("#total-price").textContent =
               data["total_price"];
             // Update cart element count
-            document.getElementById("order-count").textContent = data["remaining_orders"]
+            document.getElementById("order-count").textContent =
+              data["remaining_orders"];
             // Hide order button and price when cart is empty
             if (data["remaining_orders"] === 0) {
               document.querySelector("#cart-table").innerHTML = `

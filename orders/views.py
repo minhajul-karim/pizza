@@ -1,7 +1,7 @@
 """Definition of all views."""
 
+import uuid
 import environ
-import requests
 from django.contrib import messages
 from sslcommerz_lib import SSLCOMMERZ
 from django.utils.http import urlencode
@@ -121,6 +121,7 @@ def add_to_cart(request):
     """Add to cart."""
     if request.method == "POST":
         food_id = request.POST["food-id"]
+        print(food_id, type(food_id))
         addon = request.POST["addon"]
         topping_1 = Topping.objects.get(
             topping_name=request.POST["topping-1"]) if "topping-1" in request.POST else None
@@ -135,6 +136,7 @@ def add_to_cart(request):
         if "cheese" in request.POST and request.POST.get("cheese") == "Y":
             extra_cheese = request.POST["cheese"]
         # Save data into db
+        # TODO: ERROR HANDLE
         current_order = Order(user=User.objects.get(pk=request.user.id),
                               food=FoodItem.objects.get(pk=food_id),
                               addon=AddOn.objects.get(addon_name=addon),
@@ -203,7 +205,8 @@ def checkout(request):
             response = sslcz.createSession({
                 'total_amount': total_amount,
                 'currency': "USD",
-                'tran_id': "tran_12345",
+                # unique transaction id
+                'tran_id': uuid.uuid4().int,
                 # if transaction is succesful, user will be redirected here
                 'success_url': "http://127.0.0.1:8000/successful-payment-listener",
                 # if transaction is failed, user will be redirected here
@@ -226,6 +229,7 @@ def checkout(request):
             })
             # Save the session key if needed and redirect to PG page
             if response["status"] == "SUCCESS":
+                # TODO: SAVE ESSENTIAL INFO INTO NEW ORDER DB?
                 return redirect(response['GatewayPageURL'])
             else:
                 messages.error(
@@ -249,34 +253,30 @@ def checkout(request):
 def successful_payment_listener(request):
     """Listener for successful payment"""
     if request.method == "POST":
-        # Validate IPN POST request
-        if request.POST["status"] == "VALID":
-            val_id = request.POST["val_id"]
-            payload = {
-                "val_id": val_id,
-                "store_id": env("STORE_ID"),
-                "store_passwd": env("STORE_PASSWORD")
-            }
-            # Validate order
-            url = "https://sandbox.sslcommerz.com/validator/api/validationserverAPI.php"
-            response = requests.get(url, params=payload).json()
-            if (response["status"] ==
-                    "VALID" or response["status"] == "VALIDATED"):
-                return redirect("/successful-payment-view")
+        if sslcz.hash_validate_ipn(request.POST):
+            if request.POST["status"] == "VALID":
+                response = sslcz.validationTransactionOrder(
+                    request.POST["val_id"])
+                if (response["status"] ==
+                        "VALID" or response["status"] == "VALIDATED"):
+                    return redirect("/successful-payment-view")
+                else:
+                    return redirect("/unsuccessful-payment-view")
+            elif request.POST["status"] == "FAILED":
+                return redirect(
+                    "/checkout?" + urlencode({"msg": "Your transaction is declined by your Bank"}))
+            elif request.POST["status"] == "CANCELLED":
+                return redirect(
+                    "/checkout?" + urlencode({"msg": "You cancelled the transaction"}))
+            elif request.POST["status"] == "UNATTEMPTED":
+                return redirect(
+                    "/checkout?" + urlencode({"msg": "You didn't choose any payment channel"}))
             else:
-                return redirect("/unsuccessful-payment-view")
-        elif request.POST["status"] == "FAILED":
-            return redirect(
-                "/checkout?" + urlencode({"msg": "Your transaction is declined by your Bank"}))
-        elif request.POST["status"] == "CANCELLED":
-            return redirect(
-                "/checkout?" + urlencode({"msg": "You cancelled the transaction"}))
-        elif request.POST["status"] == "UNATTEMPTED":
-            return redirect(
-                "/checkout?" + urlencode({"msg": "You didn't choose any payment channel"}))
+                return redirect(
+                    "/checkout?" + urlencode({"msg": "Payment Timeout"}))
+
         else:
-            return redirect(
-                "/checkout?" + urlencode({"msg": "Payment Timeout"}))
+            print("Hash validation failed")
     return redirect("/")
 
 
