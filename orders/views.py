@@ -8,11 +8,11 @@ from django.utils.http import urlencode
 from django.contrib.auth.models import User
 from .forms import SignupForm, CheckoutForm
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
-from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
+from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status, Transaction
 from django.core.paginator import Paginator
 
 # Read env file
@@ -29,12 +29,13 @@ sslcz = SSLCOMMERZ({
 
 def index(request):
     """Home page."""
-    foods = FoodItem.objects.all()
+    foods = FoodItem.objects.all().order_by("id")
     # Show 5 foods per page
     paginator = Paginator(foods, 6)
     page_number = request.GET.get("page")
     food_obj = paginator.get_page(page_number)
-    return render(request, "orders/index.html", {"foods": food_obj})
+    orders_count = Order.objects.filter(user=request.user.id, status=1).count()
+    return render(request, "orders/index.html", {"foods": food_obj, "orders_count": orders_count})
 
 
 def signup_view(request):
@@ -121,7 +122,6 @@ def add_to_cart(request):
     """Add to cart."""
     if request.method == "POST":
         food_id = request.POST["food-id"]
-        print(food_id, type(food_id))
         addon = request.POST["addon"]
         topping_1 = Topping.objects.get(
             topping_name=request.POST["topping-1"]) if "topping-1" in request.POST else None
@@ -136,7 +136,7 @@ def add_to_cart(request):
         if "cheese" in request.POST and request.POST.get("cheese") == "Y":
             extra_cheese = request.POST["cheese"]
         # Save data into db
-        # TODO: ERROR HANDLE
+        # TODO: HANDLE ERROR?
         current_order = Order(user=User.objects.get(pk=request.user.id),
                               food=FoodItem.objects.get(pk=food_id),
                               addon=AddOn.objects.get(addon_name=addon),
@@ -186,7 +186,12 @@ def my_orders_view(request):
     paginator = Paginator(orders, 5)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    return render(request, "orders/my_orders.html", {"orders": page_obj})
+    orders_count = Order.objects.filter(user=request.user.id, status=1).count()
+    context = {
+        "orders": page_obj,
+        "orders_count": orders_count
+    }
+    return render(request, "orders/my_orders.html", context)
 
 
 @login_required
@@ -201,11 +206,12 @@ def checkout(request):
             email = form.cleaned_data["email"]
             phone = form.cleaned_data["phone"]
             address = form.cleaned_data["address"]
+            tran_id = uuid.uuid4().int
             response = sslcz.createSession({
                 'total_amount': total_amount,
                 'currency': "USD",
                 # unique transaction id
-                'tran_id': uuid.uuid4().int,
+                'tran_id': tran_id,
                 # if transaction is succesful, user will be redirected here
                 'success_url': "http://127.0.0.1:8000/successful-payment-listener",
                 # if transaction is failed, user will be redirected here
@@ -226,9 +232,19 @@ def checkout(request):
                 'product_category': "Test Category",
                 'product_profile': "general",
             })
-            # Save the session key if needed and redirect to PG page
+            # TODO: Save the session key if needed and redirect to PG page
             if response["status"] == "SUCCESS":
-                # TODO: SAVE ESSENTIAL INFO INTO NEW ORDER DB?
+                # Save transaction information in db
+                cur_transaction = Transaction(user=User.objects.get(pk=request.user.id),
+                                              name=request.user.get_username(),
+                                              email=email,
+                                              phone=phone,
+                                              amount=total_amount,
+                                              address=address,
+                                              status="pending",
+                                              transaction_id=tran_id,
+                                              currency="USD")
+                cur_transaction.save()
                 return redirect(response['GatewayPageURL'])
             else:
                 messages.error(
@@ -258,7 +274,16 @@ def successful_payment_listener(request):
                     request.POST["val_id"])
                 if (response["status"] ==
                         "VALID" or response["status"] == "VALIDATED"):
-                    return redirect("/successful-payment-view")
+                    # Update transaction db
+                    try:
+                        trans_info = Transaction.objects.get(
+                            transaction_id=request.POST["tran_id"])
+                        trans_info.status = "processing"
+                        trans_info.save()
+                        return redirect("/successful-payment-view")
+                    except Transaction.DoesNotExist:
+                        return redirect(
+                            "/checkout?" + urlencode({"msg": "No transaction information found"}))
                 else:
                     return redirect("/unsuccessful-payment-view")
             elif request.POST["status"] == "FAILED":
@@ -273,9 +298,9 @@ def successful_payment_listener(request):
             else:
                 return redirect(
                     "/checkout?" + urlencode({"msg": "Payment Timeout"}))
-
         else:
-            print("Hash validation failed")
+            return redirect(
+                "/checkout?" + urlencode({"msg": "Hash validation failed"}))
     return redirect("/")
 
 
