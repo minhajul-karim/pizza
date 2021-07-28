@@ -1,11 +1,6 @@
 {% extends "orders/base.html" %}
 {% load static %}
-
-{% block title %}
-Cart - Pizza & Subs
-{% endblock %}
-
-{% block content %}
+{% block title %} Cart - Pizza & Subs {% endblock %} {% block content %}
 {% if orders %}
 <div class="container-fluid d-flex flex-column" id="cart-table">
     <h1 class="my-3">Cart</h1>
@@ -13,7 +8,6 @@ Cart - Pizza & Subs
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">id</th>
                     <th scope="col">Food</th>
                     <th scope="col">Addon</th>
                     <th scope="col">Topping 1</th>
@@ -22,14 +16,12 @@ Cart - Pizza & Subs
                     <th scope="col">Extra cheese</th>
                     <th scope="col">Size</th>
                     <th scope="col">Price</th>
-                    <th scope="col">Status</th>
                     <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td>{{ order.id }}</td>
                     <td>{{ order.food }}</td>
                     <td>{{ order.addon }}</td>
                     <td>{{ order.topping1 }}</td>
@@ -38,8 +30,7 @@ Cart - Pizza & Subs
                     <td>{{ order.extra_cheese }}</td>
                     <td>{{ order.size }}</td>
                     <td>{{ order.price }}</td>
-                    <td>{{ order.status }}</td>
-                    <td class="text-center cross-sign" style="cursor: pointer;">
+                    <td class="text-center cross-sign" style="cursor: pointer">
                         <svg id="i-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"
                             fill="none" stroke="currentcolor" stroke-linecap="round" stroke-linejoin="round"
                             stroke-width="10">
@@ -56,11 +47,11 @@ Cart - Pizza & Subs
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td></td>
                     <td>
-                        <p class="lead font-weight-bold">Total: $<span id="total-price">{{ total_price }}</span></p>
+                        <p class="lead font-weight-bold">
+                            Total: $<span id="total-price">{{ total_price }}</span>
+                        </p>
                     </td>
-                    <td></td>
                     <td></td>
                 </tr>
             </tbody>

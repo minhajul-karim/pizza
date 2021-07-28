@@ -13,6 +13,7 @@ from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
+from django.core.paginator import Paginator
 
 # Read env file
 env = environ.Env()
@@ -29,12 +30,11 @@ sslcz = SSLCOMMERZ({
 def index(request):
     """Home page."""
     foods = FoodItem.objects.all()
-    orders_count = Order.objects.filter(user=request.user.id, status=1).count()
-    context = {
-        "foods": foods,
-        "orders_count": orders_count,
-    }
-    return render(request, "orders/index.html", context)
+    # Show 5 foods per page
+    paginator = Paginator(foods, 6)
+    page_number = request.GET.get("page")
+    food_obj = paginator.get_page(page_number)
+    return render(request, "orders/index.html", {"foods": food_obj})
 
 
 def signup_view(request):
@@ -182,12 +182,11 @@ def my_orders_view(request):
     """
     orders = Order.objects.filter(
         user=request.user.id).order_by("-id").exclude(status=1)
-    orders_count = Order.objects.filter(user=request.user.id, status=1).count()
-    context = {
-        "orders": orders,
-        "orders_count": orders_count
-    }
-    return render(request, "orders/my_orders.html", context)
+    # Show 5 orders per page
+    paginator = Paginator(orders, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    return render(request, "orders/my_orders.html", {"orders": page_obj})
 
 
 @login_required
@@ -328,7 +327,11 @@ def order_admin_view(request):
     """View admin interface of orders."""
     if request.user.is_superuser:
         orders = Order.objects.order_by("-id").exclude(status=1)
-        return render(request, "orders/admin_orders.html", {"orders": orders})
+        # Show 5 orders per page
+        paginator = Paginator(orders, 5)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        return render(request, "orders/admin_orders.html", {"orders": page_obj})
     return redirect("/")
 
 
