@@ -16,13 +16,14 @@ Orders - Pizza & Subs
                     <th scope="col">id</th>
                     <th scope="col">Food</th>
                     <th scope="col">Addon</th>
-                    <th scope="col">Topping 1</th>
-                    <th scope="col">Topping 2</th>
-                    <th scope="col">Topping 3</th>
-                    <th scope="col">Extra cheese</th>
+                    <th scope="col">Top 1</th>
+                    <th scope="col">Top 2</th>
+                    <th scope="col">Top 3</th>
+                    <th scope="col">Ex. cheese</th>
                     <th scope="col">Size</th>
                     <th scope="col">Price</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Tr. Id</th>
                     <th scope="col">Action</th>
                 </tr>
             </thead>
@@ -39,6 +40,7 @@ Orders - Pizza & Subs
                     <td>{{ order.size }}</td>
                     <td>{{ order.price }}</td>
                     <td>{{ order.status }}</td>
+                    <td>{{ order.transaction_id.transaction_id }}</td>
                     <td class="text-center cross-sign" style="cursor: pointer;">
                         {% if order.status|stringformat:"s" == "Completed" %}
                         <button type="button" class="btn btn-primary btn-sm" disabled>Complete</button>

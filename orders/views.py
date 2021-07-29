@@ -2,6 +2,7 @@
 
 import uuid
 import environ
+import shortuuid
 from django.contrib import messages
 from sslcommerz_lib import SSLCOMMERZ
 from django.utils.http import urlencode
@@ -207,7 +208,7 @@ def checkout(request):
             email = form.cleaned_data["email"]
             phone = form.cleaned_data["phone"]
             address = form.cleaned_data["address"]
-            tran_id = uuid.uuid4().int
+            tran_id = shortuuid.uuid()
             response = sslcz.createSession({
                 'total_amount': total_amount,
                 'currency': "USD",
@@ -273,8 +274,7 @@ def successful_payment_listener(request):
             if request.POST["status"] == "VALID":
                 response = sslcz.validationTransactionOrder(
                     request.POST["val_id"])
-                if (response["status"] ==
-                        "VALID" or response["status"] == "VALIDATED"):
+                if (response["status"] == "VALID" or response["status"] == "VALIDATED"):
                     # Update transaction db
                     try:
                         tran_id = request.POST["tran_id"]
@@ -282,10 +282,9 @@ def successful_payment_listener(request):
                             transaction_id=tran_id)
                         trans_info.status = "processing"
                         trans_info.save()
-                        return redirect("/successful-payment-view?" +
-                                        urlencode({
-                                            "tran_id": tran_id
-                                        }))
+                        return redirect("/successful-payment-view?" + urlencode({
+                            "tran_id": tran_id
+                        }))
                     except Transaction.DoesNotExist:
                         return redirect(
                             "/checkout?" + urlencode({
@@ -328,7 +327,6 @@ def successful_payment_view(request):
             order.transaction_id = Transaction.objects.get(
                 transaction_id=tran_id
             )
-        print(new_orders)
         Order.objects.bulk_update(new_orders, ["status", "transaction_id"])
         return render(request, "orders/success.html")
     return redirect("/")

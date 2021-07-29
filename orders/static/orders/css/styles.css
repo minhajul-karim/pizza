@@ -171,6 +171,12 @@ footer a:hover {
     color: red;
     opacity: 1;
 }
+.pagination {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    width: 100%;
+}
 @media all and (max-width: 767px) {
     .auth-forms {
         width: 300px;
