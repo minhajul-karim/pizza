@@ -1,6 +1,7 @@
 """Definition of all views."""
 
 import uuid
+from django.http.response import HttpResponse
 import environ
 import shortuuid
 from django.contrib import messages
@@ -219,7 +220,7 @@ def checkout(request):
                 # if transaction is failed, user will be redirected here
                 'fail_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
                 # after user cancels the transaction, will be redirected here
-                'cancel_url': "http://127.0.0.1:8000/cart",
+                'cancel_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
                 'emi_option': "0",
                 'cus_name': "test",
                 'cus_email': email,
