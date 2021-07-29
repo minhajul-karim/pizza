@@ -35,7 +35,8 @@ def index(request):
     page_number = request.GET.get("page")
     food_obj = paginator.get_page(page_number)
     orders_count = Order.objects.filter(user=request.user.id, status=1).count()
-    return render(request, "orders/index.html", {"foods": food_obj, "orders_count": orders_count})
+    context = {"foods": food_obj, "orders_count": orders_count}
+    return render(request, "orders/index.html", context)
 
 
 def signup_view(request):
@@ -276,25 +277,37 @@ def successful_payment_listener(request):
                         "VALID" or response["status"] == "VALIDATED"):
                     # Update transaction db
                     try:
+                        tran_id = request.POST["tran_id"]
                         trans_info = Transaction.objects.get(
-                            transaction_id=request.POST["tran_id"])
+                            transaction_id=tran_id)
                         trans_info.status = "processing"
                         trans_info.save()
-                        return redirect("/successful-payment-view")
+                        return redirect("/successful-payment-view?" +
+                                        urlencode({
+                                            "tran_id": tran_id
+                                        }))
                     except Transaction.DoesNotExist:
                         return redirect(
-                            "/checkout?" + urlencode({"msg": "No transaction information found"}))
+                            "/checkout?" + urlencode({
+                                "msg": "No transaction information found"
+                            }))
                 else:
                     return redirect("/unsuccessful-payment-view")
             elif request.POST["status"] == "FAILED":
                 return redirect(
-                    "/checkout?" + urlencode({"msg": "Your transaction is declined by your Bank"}))
+                    "/checkout?" + urlencode({
+                        "msg": "Your transaction is declined by your Bank"
+                    }))
             elif request.POST["status"] == "CANCELLED":
                 return redirect(
-                    "/checkout?" + urlencode({"msg": "You cancelled the transaction"}))
+                    "/checkout?" + urlencode({
+                        "msg": "You cancelled the transaction"
+                    }))
             elif request.POST["status"] == "UNATTEMPTED":
                 return redirect(
-                    "/checkout?" + urlencode({"msg": "You didn't choose any payment channel"}))
+                    "/checkout?" + urlencode({
+                        "msg": "You didn't choose any payment channel"
+                    }))
             else:
                 return redirect(
                     "/checkout?" + urlencode({"msg": "Payment Timeout"}))

@@ -78,6 +78,27 @@ class Menu(models.Model):
         return f"{self.food} - {self.addon} - {self.size} - {self.price}"
 
 
+class Transaction(models.Model):
+    """The class to contain transaction information"""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.SET_NULL,
+                             blank=True,
+                             null=True)
+    name = models.CharField(max_length=255, default=None)
+    email = models.CharField(max_length=30, default=None)
+    phone = models.CharField(max_length=20, default=None)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    address = models.TextField()
+    status = models.CharField(max_length=10, default=None)
+    transaction_id = models.CharField(max_length=255, default=None)
+    currency = models.CharField(max_length=20, default=None)
+
+    def __str__(self):
+        """Object representation of Transaction class."""
+        return f"{self.transaction_id} - {self.name} \
+            - {self.amount} - {self.status}"
+
+
 class Order(models.Model):
     """The class to contain orders."""
 
@@ -116,27 +137,9 @@ class Order(models.Model):
     status = models.ForeignKey(Status,
                                on_delete=models.CASCADE,
                                default=1)
+    transaction_id = models.ForeignKey(Transaction, on_delete=models.PROTECT)
 
     def __str__(self):
         """Object representation of Order class."""
-        return f"{self.food} - {self.price} - {self.status}"
-
-
-class Transaction(models.Model):
-    """The class to contain transaction information"""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.SET_NULL,
-                             blank=True,
-                             null=True)
-    name = models.CharField(max_length=255, default=None)
-    email = models.CharField(max_length=30, default=None)
-    phone = models.CharField(max_length=20, default=None)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    address = models.TextField()
-    status = models.CharField(max_length=10, default=None)
-    transaction_id = models.CharField(max_length=255, default=None)
-    currency = models.CharField(max_length=20, default=None)
-
-    def __str__(self):
-        """Object representation of Transaction class."""
-        return f"{self.transaction_id} - {self.name} - {self.amount} - {self.status}"
+        return f"{self.food} - {self.price} - {self.status} \
+             {self.transaction_id}"
