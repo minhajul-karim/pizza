@@ -3,6 +3,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.forms import fields
 
 
 class SignupForm(UserCreationForm):
@@ -28,3 +29,11 @@ class SignupForm(UserCreationForm):
             raise forms.ValidationError(
                 "A user with that email already exists.")
         return email
+
+
+class CheckoutForm(forms.Form):
+    """Class for checkout form."""
+
+    email = forms.EmailField(label="Email address")
+    phone = forms.CharField(label="Phone number", min_length=5)
+    address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}))

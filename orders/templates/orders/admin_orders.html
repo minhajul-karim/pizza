@@ -8,7 +8,7 @@ Orders - Pizza & Subs
 {% block content %}
 {% if orders %}
 <div class="container-fluid" id="orders-admin">
-    <h1 class="mb-3">All orders</h1>
+    <h1 class="my-3">All orders</h1>
     <div class="table-responsive text-center">
         <table class="table">
             <thead>
@@ -16,13 +16,14 @@ Orders - Pizza & Subs
                     <th scope="col">id</th>
                     <th scope="col">Food</th>
                     <th scope="col">Addon</th>
-                    <th scope="col">Topping 1</th>
-                    <th scope="col">Topping 2</th>
-                    <th scope="col">Topping 3</th>
-                    <th scope="col">Extra cheese</th>
+                    <th scope="col">Top 1</th>
+                    <th scope="col">Top 2</th>
+                    <th scope="col">Top 3</th>
+                    <th scope="col">Ex. cheese</th>
                     <th scope="col">Size</th>
                     <th scope="col">Price</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Tr. Id</th>
                     <th scope="col">Action</th>
                 </tr>
             </thead>
@@ -39,6 +40,7 @@ Orders - Pizza & Subs
                     <td>{{ order.size }}</td>
                     <td>{{ order.price }}</td>
                     <td>{{ order.status }}</td>
+                    <td>{{ order.transaction_id.transaction_id }}</td>
                     <td class="text-center cross-sign" style="cursor: pointer;">
                         {% if order.status|stringformat:"s" == "Completed" %}
                         <button type="button" class="btn btn-primary btn-sm" disabled>Complete</button>
@@ -50,6 +52,23 @@ Orders - Pizza & Subs
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+    <div class="pagination justify-content-center mt-2">
+        <span class="step-links">
+            {% if orders.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ orders.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ orders.number }} of {{ orders.paginator.num_pages }}.
+            </span>
+
+            {% if orders.has_next %}
+            <a href="?page={{ orders.next_page_number }}">next</a>
+            <a href="?page={{ orders.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
     </div>
 </div>
 {% else %}

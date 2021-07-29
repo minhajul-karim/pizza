@@ -1,59 +1,74 @@
-{% extends "orders/base.html" %}
-{% load static %}
-
-{% block title %}
-{{ food }} - Pizza & Subs
-{% endblock %}
-
-{% block content %}
+{% extends "orders/base.html" %} {% load static %} {% block title %} {{ food }}
+- Pizza & Subs {% endblock %} {% block content %}
 <div class="container" id="product-container">
     <form action="/add-to-cart" method="POST">
         {% csrf_token %}
         <div class="row mt-5">
             <div class="col-md-6" class="customization-section">
                 <!-- Alert -->
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <div
+                    class="alert alert-info alert-dismissible fade show"
+                    role="alert"
+                >
                     <strong>Hi!</strong> We serve this food only in large size.
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <button
+                        type="button"
+                        class="close"
+                        data-dismiss="alert"
+                        aria-label="Close"
+                    >
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div id="product-image-1">
-                    <img src="{{ image }}" alt="{{ food }}">
+                    <img src="{{ image }}" alt="{{ food }}" />
                 </div>
                 <h1>{{ food }}</h1>
-                <hr>
+                <hr />
                 <div class="form-group">
                     <label for="select-addon">Select your add-ons</label>
                     <select class="form-control" id="select-addon" name="addon">
                         {% for addon in addons %}
-                        <option data-addon-id="{{ addon.id }}">{{ addon }}</option>
+                        <option data-addon-id="{{ addon.id }}">
+                            {{ addon }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
 
                 <!-- Toppings sections -->
-                {% if toppings %}
-                {% for i in "123"|make_list %}
+                {% if toppings %} {% for i in "123"|make_list %}
                 <div class="form-group" id="topping-{{ i }}">
                     <label for="toppings">Topping {{ i }}</label>
-                    <select class="form-control" name="topping-{{ i }}" id="topping-options-{{ i }}">
+                    <select
+                        class="form-control"
+                        name="topping-{{ i }}"
+                        id="topping-options-{{ i }}"
+                    >
                         {% for topping in toppings %}
-                        <option data-topping-id="{{ topping.id }}">{{ topping }}</option>
+                        <option data-topping-id="{{ topping.id }}">
+                            {{ topping }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
-                {% endfor %}
-                {% endif %}
+                {% endfor %} {% endif %}
 
                 <!-- Cheese section -->
                 {% if cheese_options %}
                 <div id="cheese-section">
                     {% for cheese in cheese_options %}
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="cheese" id="{{ cheese.id }}"
-                            value="{{ cheese.value }}">
-                        <label class="form-check-label" for="{{ cheese.id }}">{{ cheese.label }}</label>
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            name="cheese"
+                            id="{{ cheese.id }}"
+                            value="{{ cheese.value }}"
+                        />
+                        <label class="form-check-label" for="{{ cheese.id }}"
+                            >{{ cheese.label }}</label
+                        >
                     </div>
                     {% endfor %}
                 </div>
@@ -62,37 +77,77 @@
                 <!-- Size section -->
                 {% if sizes %}
                 <div id="size-section" class="mt-2">
-                    {% for size in sizes %}
-                    {% if forloop.first %}
+                    {% for size in sizes %} {% if forloop.first %}
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="size" id="inline-size-{{ size }}"
-                            value="{{ size }}" data-size-id={{ size.id }} checked>
-                        <label class="form-check-label" for="inline-size-{{ size }}">{{ size }}</label>
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            name="size"
+                            id="inline-size-{{ size }}"
+                            value="{{ size }}"
+                            data-size-id="{{"
+                            size.id
+                            }}
+                            checked
+                        />
+                        <label
+                            class="form-check-label"
+                            for="inline-size-{{ size }}"
+                            >{{ size }}</label
+                        >
                     </div>
                     {% else %}
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="size" id="inline-size-{{ size }}"
-                            value="{{ size }}" data-size-id={{ size.id }}>
-                        <label class="form-check-label" for="inline-size-{{ size }}">{{ size }}</label>
+                        <input
+                            class="form-check-input"
+                            type="radio"
+                            name="size"
+                            id="inline-size-{{ size }}"
+                            value="{{ size }}"
+                            data-size-id="{{"
+                            size.id
+                            }}
+                        />
+                        <label
+                            class="form-check-label"
+                            for="inline-size-{{ size }}"
+                            >{{ size }}</label
+                        >
                     </div>
-                    {% endif %}
-                    {% endfor %}
+                    {% endif %} {% endfor %}
                 </div>
                 {% endif %}
-
-
             </div>
 
             <!-- Order section -->
             <div class="col-md-6" class="order-section">
                 <div id="product-image-2">
-                    <img src="{{ image }}" alt="{{ food }}">
+                    <img src="{{ image }}" alt="{{ food }}" />
                 </div>
                 <div class="product-price">
-                    <h1 class="display-3 text-center">$<span id="set-price">0.0</span></h1>
-                    <input type="text" name="food-id" id="hidden-food-id" value="">
-                    <input type="text" name="price" id="hidden-price" value="">
-                    <button class="btn btn-primary btn-lg btn-block" type="submit">Add to cart</button>
+                    <h1 class="display-3 text-center">
+                        $<span id="set-price">0.0</span>
+                    </h1>
+                    <input
+                        type="text"
+                        name="food-id"
+                        id="hidden-food-id"
+                        value=""
+                    />
+                    <input
+                        type="text"
+                        name="price"
+                        id="hidden-price"
+                        value=""
+                    />
+                    <button
+                        id="add-to-cart-btn"
+                        class="btn btn-primary btn-lg btn-block"
+                        type="submit"
+                        disabled
+                    >
+                        Add to cart
+                    </button>
                 </div>
             </div>
         </div>

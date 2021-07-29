@@ -13,114 +13,179 @@ h5,
 p,
 ul,
 li {
-  margin: 0;
-  padding: 0;
-  font-family: 'Poppins', sans-serif !important;
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif !important;
+    list-style: none;
 }
 
 body {
-  padding-top: 56px;
+    padding-top: 56px;
 }
 
 #page-container {
-  min-height: calc(100vh - 56px);
-  position: relative;
+    min-height: calc(100vh - 56px);
+    position: relative;
 }
 
-#content-wrap {
-  padding-bottom: 100px;
+#product-row,
+.table {
+    padding-bottom: 100px;
 }
 
 .navbar-nav a {
-  color: #fff !important;
+    color: #fff !important;
 }
 
 .card-title a {
-  text-decoration: none;
-  color: #000;
+    text-decoration: none;
+    color: #000;
 }
 
 .alert {
-  display: none;
+    display: none;
 }
 
 #topping-1,
 #topping-2,
 #topping-3 {
-  display: none;
+    display: none;
 }
 
 /* #cheese-section, */
 #hidden-food-id,
 #hidden-price {
-  display: none;
+    display: none;
 }
 
 footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 50px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
 }
 
 footer ul {
-  margin: 13px 0 0 0;
+    margin: 13px 0 0 0;
 }
 
 footer a {
-  color: #fff;
-  text-decoration: none;
+    color: #fff;
+    text-decoration: none;
 }
 
 footer a:hover {
-  color: #fff;
-  text-decoration: none;
+    color: #fff;
+    text-decoration: none;
 }
 
 .auth-forms {
-  width: 500px;
-  margin: 0 auto;
+    width: 500px;
+    margin: 0 auto;
 }
 
 /* Hide default form hints */
 #hint_id_username,
 #hint_id_password1,
 #hint_id_password2 {
-  display: none;
+    display: none;
 }
 
 /* Hide unnecessary card items of homepage */
 .card-footer,
 .card-text,
 .card-body h5 {
-  display: none;
+    display: none;
 }
 
 /* Product page */
 #product-image-1,
 #product-image-2 {
-  width: 100%;
-  height: 300px;
-  overflow: hidden;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
 }
 
 #product-image-1 img,
 #product-image-2 img {
-  width: 100%;
+    width: 100%;
 }
 
 #product-image-1 {
-  display: none;
+    display: none;
 }
 
+/* Payment status pages */
+/* .card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
+.payment-status-card h1 {
+    font-family: "Nunito Sans", "Helvetica Neue", sans-serif;
+    font-weight: 900;
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+.success-header {
+    color: rgb(10, 155, 10);
+}
+.failure-header {
+    color: #ec0653;
+}
+.payment-status-card p {
+    color: #404f5e;
+    font-family: "Nunito Sans", "Helvetica Neue", sans-serif;
+    font-size: 20px;
+    margin: 0;
+}
+.payment-status-icon {
+    font-size: 100px;
+    line-height: 200px;
+}
+.payment-status-icon-failure {
+    color: #eb0827;
+}
+.payment-status-icon-success {
+    color: rgb(10, 155, 10);
+}
+.payment-status-card {
+    background: white;
+    padding: 60px;
+    border-radius: 4px;
+    box-shadow: 0 2px 3px #c8d0d8;
+    display: inline-block;
+    margin: 0 auto;
+}
+.payment-status-circle {
+    border-radius: 200px;
+    height: 150px;
+    width: 150px;
+    background: #f8faf5;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.messages {
+    background: whitesmoke;
+    color: red;
+    opacity: 1;
+}
+.pagination {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    width: 100%;
+}
 @media all and (max-width: 767px) {
-  .auth-forms {
-    width: 300px;
-  }
-  #product-image-1 {
-    display: block;
-  }
-  #product-image-2 {
-    display: none;
-  }
+    .auth-forms {
+        width: 300px;
+    }
+    #product-image-1 {
+        display: block;
+    }
+    #product-image-2 {
+        display: none;
+    }
 }

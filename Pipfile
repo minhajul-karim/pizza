@@ -14,7 +14,10 @@ django-crispy-forms = "*"
 django-environ = "*"
 gunicorn = "*"
 whitenoise = "*"
-psycopg2 = "*"
+psycopg2 = "==2.8.6"
+sslcommerz-lib = "*"
+requests = "*"
+shortuuid = "*"
 
 [requires]
 python_version = "3.6"

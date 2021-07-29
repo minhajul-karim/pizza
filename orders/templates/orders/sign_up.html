@@ -8,7 +8,7 @@ Sign Up - Pizza & Subs
 
 {% block content %}
 <div class="auth-forms">
-    <h1 class="display-3 mt-5 mb-3">Sign Up</h1>
+    <h1 class="display-4 mt-5 mb-5">Sign Up</h1>
     <form action="/signup" method="POST">
         {% csrf_token %}
         {{ form|crispy }}

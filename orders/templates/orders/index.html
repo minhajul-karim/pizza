@@ -35,7 +35,7 @@ Pizza & Subs
                 </a>
             </div>
 
-            <div class="row">
+            <div class="row" id="product-row">
                 {% for food in foods %}
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="card h-100">
@@ -49,6 +49,23 @@ Pizza & Subs
                     </div>
                 </div>
                 {% endfor %}
+            </div>
+            <div class="pagination justify-content-center mt-2">
+                <span class="step-links">
+                    {% if foods.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ foods.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ foods.number }} of {{ foods.paginator.num_pages }}.
+                    </span>
+
+                    {% if foods.has_next %}
+                    <a href="?page={{ foods.next_page_number }}">next</a>
+                    <a href="?page={{ foods.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span>
             </div>
             <!-- /.row -->
         </div>

@@ -1,21 +1,43 @@
-"""View of index page."""
+"""Definition of all views."""
 
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from .forms import SignupForm
-from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status
+import uuid
+from django.http.response import HttpResponse
+import environ
+import shortuuid
+from django.contrib import messages
+from sslcommerz_lib import SSLCOMMERZ
+from django.utils.http import urlencode
 from django.contrib.auth.models import User
+from .forms import SignupForm, CheckoutForm
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib.auth import authenticate, login
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import FoodItem, Menu, Topping, Order, Size, AddOn, Status, Transaction
+from django.core.paginator import Paginator
+
+# Read env file
+env = environ.Env()
+environ.Env.read_env()
+
+# SSLCOMMERZ config
+sslcz = SSLCOMMERZ({
+    "store_id": env("STORE_ID"),
+    "store_pass": env("STORE_PASSWORD"),
+    "issandbox": True
+})
 
 
 def index(request):
     """Home page."""
-    foods = FoodItem.objects.all()
+    foods = FoodItem.objects.all().order_by("id")
+    # Show 5 foods per page
+    paginator = Paginator(foods, 6)
+    page_number = request.GET.get("page")
+    food_obj = paginator.get_page(page_number)
     orders_count = Order.objects.filter(user=request.user.id, status=1).count()
-    context = {
-        "foods": foods,
-        "orders_count": orders_count,
-    }
+    context = {"foods": food_obj, "orders_count": orders_count}
     return render(request, "orders/index.html", context)
 
 
@@ -98,41 +120,41 @@ def price(request):
         return JsonResponse({"status": "Invalid request."})
 
 
+@login_required
 def add_to_cart(request):
     """Add to cart."""
     if request.method == "POST":
-        if request.user.is_authenticated:
-            food_id = request.POST["food-id"]
-            addon = request.POST["addon"]
-            topping_1 = Topping.objects.get(
-                topping_name=request.POST["topping-1"]) if "topping-1" in request.POST else None
-            topping_2 = Topping.objects.get(
-                topping_name=request.POST["topping-2"]) if "topping-2" in request.POST else None
-            topping_3 = Topping.objects.get(
-                topping_name=request.POST["topping-3"]) if "topping-3" in request.POST else None
-            size = Size.objects.get(
-                size_name=request.POST["size"]) if "size" in request.POST else None
-            price = request.POST["price"]
-            extra_cheese = None
-            if "cheese" in request.POST and request.POST.get("cheese") == "Y":
-                extra_cheese = request.POST["cheese"]
-            # Save data into db
-            ord = Order(user=User.objects.get(pk=request.user.id),
-                        food=FoodItem.objects.get(pk=food_id),
-                        addon=AddOn.objects.get(addon_name=addon),
-                        topping1=topping_1,
-                        topping2=topping_2,
-                        topping3=topping_3,
-                        extra_cheese=extra_cheese,
-                        size=size,
-                        price=price,
-                        status=Status.objects.get(pk=1))
-            ord.save()
-        else:
-            return redirect("/login")
+        food_id = request.POST["food-id"]
+        addon = request.POST["addon"]
+        topping_1 = Topping.objects.get(
+            topping_name=request.POST["topping-1"]) if "topping-1" in request.POST else None
+        topping_2 = Topping.objects.get(
+            topping_name=request.POST["topping-2"]) if "topping-2" in request.POST else None
+        topping_3 = Topping.objects.get(
+            topping_name=request.POST["topping-3"]) if "topping-3" in request.POST else None
+        size = Size.objects.get(
+            size_name=request.POST["size"]) if "size" in request.POST else None
+        price = request.POST["price"]
+        extra_cheese = None
+        if "cheese" in request.POST and request.POST.get("cheese") == "Y":
+            extra_cheese = request.POST["cheese"]
+        # Save data into db
+        # TODO: HANDLE ERROR?
+        current_order = Order(user=User.objects.get(pk=request.user.id),
+                              food=FoodItem.objects.get(pk=food_id),
+                              addon=AddOn.objects.get(addon_name=addon),
+                              topping1=topping_1,
+                              topping2=topping_2,
+                              topping3=topping_3,
+                              extra_cheese=extra_cheese,
+                              size=size,
+                              price=price,
+                              status=Status.objects.get(pk=1))
+        current_order.save()
     return redirect("/")
 
 
+@csrf_exempt
 def cart_view(request):
     """
     View cart items.
@@ -144,14 +166,17 @@ def cart_view(request):
     for order in orders:
         total_price += order.price
     orders_count = orders.count()
+    request.session["total_price"] = str(total_price)
+    request.session["num_of_item"] = orders_count
     context = {
         "orders": orders,
         "orders_count": orders_count,
-        "total_price": total_price,
+        "total_price": total_price
     }
     return render(request, "orders/cart.html", context)
 
 
+@login_required
 def my_orders_view(request):
     """
     View cart items.
@@ -160,26 +185,172 @@ def my_orders_view(request):
     """
     orders = Order.objects.filter(
         user=request.user.id).order_by("-id").exclude(status=1)
+    # Show 5 orders per page
+    paginator = Paginator(orders, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     orders_count = Order.objects.filter(user=request.user.id, status=1).count()
     context = {
-        "orders": orders,
+        "orders": page_obj,
         "orders_count": orders_count
     }
     return render(request, "orders/my_orders.html", context)
 
 
-def confirm_order_view(request):
-    """Order confirmation."""
-    orders_not_confirmed = Order.objects.filter(user=request.user.id, status=1)
-    for order in orders_not_confirmed:
-        order.status = Status.objects.get(pk=2)
-        order.save()
+@login_required
+def checkout(request):
+    """Checkout."""
+    if request.method == "POST":
+        form = CheckoutForm(request.POST)
+        # Get session key if form is valid
+        if form.is_valid():
+            num_of_item = request.session["num_of_item"]
+            total_amount = request.session["total_price"]
+            email = form.cleaned_data["email"]
+            phone = form.cleaned_data["phone"]
+            address = form.cleaned_data["address"]
+            tran_id = shortuuid.uuid()
+            response = sslcz.createSession({
+                'total_amount': total_amount,
+                'currency': "USD",
+                # unique transaction id
+                'tran_id': tran_id,
+                # if transaction is succesful, user will be redirected here
+                'success_url': "http://127.0.0.1:8000/successful-payment-listener",
+                # if transaction is failed, user will be redirected here
+                'fail_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
+                # after user cancels the transaction, will be redirected here
+                'cancel_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
+                'emi_option': "0",
+                'cus_name': "test",
+                'cus_email': email,
+                'cus_phone': phone,
+                'cus_add1': address,
+                'cus_city': "Dhaka",
+                'cus_country': "Bangladesh",
+                'shipping_method': "NO",
+                'multi_card_name': "",
+                'num_of_item': num_of_item,
+                'product_name': "Test",
+                'product_category': "Test Category",
+                'product_profile': "general",
+            })
+            # TODO: Save the session key if needed and redirect to PG page
+            if response["status"] == "SUCCESS":
+                # Save transaction information in db
+                cur_transaction = Transaction(user=User.objects.get(pk=request.user.id),
+                                              name=request.user.get_username(),
+                                              email=email,
+                                              phone=phone,
+                                              amount=total_amount,
+                                              address=address,
+                                              status="pending",
+                                              transaction_id=tran_id,
+                                              currency="USD")
+                cur_transaction.save()
+                return redirect(response['GatewayPageURL'])
+            else:
+                messages.error(
+                    request, "Sorry, there was an error. Please try again.")
+                form = CheckoutForm()
+                return redirect("/checkout")
+        else:
+            return render(request, "orders/checkout.html", {"form": form})
+    form = CheckoutForm()
+    # List of values received from query parameters
+    msgs = request.GET.values() if len(request.GET.keys()) > 0 else []
+    context = {
+        "total_price": request.session["total_price"] if "total_price" in request.session else 0,
+        "form": form,
+        "messages": msgs
+    }
+    return render(request, "orders/checkout.html", context)
+
+
+@csrf_exempt
+def successful_payment_listener(request):
+    """Listener for successful payment"""
+    if request.method == "POST":
+        if sslcz.hash_validate_ipn(request.POST):
+            if request.POST["status"] == "VALID":
+                response = sslcz.validationTransactionOrder(
+                    request.POST["val_id"])
+                if (response["status"] == "VALID" or response["status"] == "VALIDATED"):
+                    # Update transaction db
+                    try:
+                        tran_id = request.POST["tran_id"]
+                        trans_info = Transaction.objects.get(
+                            transaction_id=tran_id)
+                        trans_info.status = "processing"
+                        trans_info.save()
+                        return redirect("/successful-payment-view?" + urlencode({
+                            "tran_id": tran_id
+                        }))
+                    except Transaction.DoesNotExist:
+                        return redirect(
+                            "/checkout?" + urlencode({
+                                "msg": "No transaction information found"
+                            }))
+                else:
+                    return redirect("/unsuccessful-payment-view")
+            elif request.POST["status"] == "FAILED":
+                return redirect(
+                    "/checkout?" + urlencode({
+                        "msg": "Your transaction is declined by your Bank"
+                    }))
+            elif request.POST["status"] == "CANCELLED":
+                return redirect(
+                    "/checkout?" + urlencode({
+                        "msg": "You cancelled the transaction"
+                    }))
+            elif request.POST["status"] == "UNATTEMPTED":
+                return redirect(
+                    "/checkout?" + urlencode({
+                        "msg": "You didn't choose any payment channel"
+                    }))
+            else:
+                return redirect(
+                    "/checkout?" + urlencode({"msg": "Payment Timeout"}))
+        else:
+            return redirect(
+                "/checkout?" + urlencode({"msg": "Hash validation failed"}))
+    return redirect("/")
+
+
+def successful_payment_view(request):
+    """View to be displayed when payment is successful"""
+    if request.user.is_authenticated:
+        tran_id = request.GET["tran_id"]
+        new_orders = Order.objects.filter(
+            user=request.user.id, status=1)
+        for order in new_orders:
+            order.status = Status.objects.get(pk=2)
+            order.transaction_id = Transaction.objects.get(
+                transaction_id=tran_id
+            )
+        Order.objects.bulk_update(new_orders, ["status", "transaction_id"])
+        return render(request, "orders/success.html")
+    return redirect("/")
+
+
+@csrf_exempt
+def unsuccessful_payment_listener(request):
+    """Listener for unsuccessful payment"""
+    if request.method == "POST":
+        return redirect("/unsuccessful-payment-view")
+    return redirect("/")
+
+
+def unsuccessful_payment_view(request):
+    """View to be displayed when payment is unsuccessful"""
+    if request.user.is_authenticated:
+        return render(request, "orders/failure.html")
     return redirect("/")
 
 
 def delete_order(request):
     """Delete an order."""
-    if request.method == "POST":
+    if request.user.is_authenticated and request.method == "POST":
         order_id = request.POST["orderId"]
         Order.objects.get(pk=order_id).delete()
         remaining_orders = Order.objects.filter(
@@ -195,15 +366,22 @@ def delete_order(request):
 
 def order_admin_view(request):
     """View admin interface of orders."""
-    orders = Order.objects.order_by("-id").exclude(status=1)
-    return render(request, "orders/admin_orders.html", {"orders": orders})
+    if request.user.is_superuser:
+        orders = Order.objects.order_by("-id").exclude(status=1)
+        # Show 5 orders per page
+        paginator = Paginator(orders, 5)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        return render(request, "orders/admin_orders.html", {"orders": page_obj})
+    return redirect("/")
 
 
 def order_confirmation_admin(request):
     """Order confirmaiton by supersuer."""
-    if request.method == "POST":
+    if request.user.is_superuser and request.method == "POST":
         order_id = request.POST["orderId"]
         order = Order.objects.get(pk=order_id)
         order.status = Status.objects.get(pk=3)
         order.save()
-        return HttpResponse("a")
+        return JsonResponse({"updated": True})
+    return redirect("/")
