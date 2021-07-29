@@ -95,8 +95,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         """Object representation of Transaction class."""
-        return f"{self.transaction_id} - {self.name} \
-            - {self.amount} - {self.status}"
+        return f"{self.transaction_id} - {self.name} - {self.amount} - {self.status}"
 
 
 class Order(models.Model):
@@ -137,9 +136,9 @@ class Order(models.Model):
     status = models.ForeignKey(Status,
                                on_delete=models.CASCADE,
                                default=1)
-    transaction_id = models.ForeignKey(Transaction, on_delete=models.PROTECT)
+    transaction_id = models.ForeignKey(
+        Transaction, on_delete=models.PROTECT, null=True)
 
     def __str__(self):
         """Object representation of Order class."""
-        return f"{self.food} - {self.price} - {self.status} \
-             {self.transaction_id}"
+        return f"{self.food} - {self.price} - {self.status} - {self.transaction_id}"

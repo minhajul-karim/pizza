@@ -320,12 +320,16 @@ def successful_payment_listener(request):
 def successful_payment_view(request):
     """View to be displayed when payment is successful"""
     if request.user.is_authenticated:
-        # Confirm orders
+        tran_id = request.GET["tran_id"]
         new_orders = Order.objects.filter(
             user=request.user.id, status=1)
         for order in new_orders:
             order.status = Status.objects.get(pk=2)
-        Order.objects.bulk_update(new_orders, ["status"])
+            order.transaction_id = Transaction.objects.get(
+                transaction_id=tran_id
+            )
+        print(new_orders)
+        Order.objects.bulk_update(new_orders, ["status", "transaction_id"])
         return render(request, "orders/success.html")
     return redirect("/")
 
