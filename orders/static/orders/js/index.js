@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (event.target.nodeName === "path") {
         // Send the order id to server to delete order
         const orderRow = event.target.parentNode.parentNode.parentNode;
-        const orderId = orderRow.children[0].textContent;
+        const orderId = event.target.dataset.foodId;
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/delete-order");
         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
