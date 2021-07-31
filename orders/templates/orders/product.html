@@ -6,17 +6,9 @@
         <div class="row mt-5">
             <div class="col-md-6" class="customization-section">
                 <!-- Alert -->
-                <div
-                    class="alert alert-info alert-dismissible fade show"
-                    role="alert"
-                >
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
                     <strong>Hi!</strong> We serve this food only in large size.
-                    <button
-                        type="button"
-                        class="close"
-                        data-dismiss="alert"
-                        aria-label="Close"
-                    >
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -40,11 +32,7 @@
                 {% if toppings %} {% for i in "123"|make_list %}
                 <div class="form-group" id="topping-{{ i }}">
                     <label for="toppings">Topping {{ i }}</label>
-                    <select
-                        class="form-control"
-                        name="topping-{{ i }}"
-                        id="topping-options-{{ i }}"
-                    >
+                    <select class="form-control" name="topping-{{ i }}" id="topping-options-{{ i }}">
                         {% for topping in toppings %}
                         <option data-topping-id="{{ topping.id }}">
                             {{ topping }}
@@ -59,16 +47,9 @@
                 <div id="cheese-section">
                     {% for cheese in cheese_options %}
                     <div class="form-check form-check-inline">
-                        <input
-                            class="form-check-input"
-                            type="radio"
-                            name="cheese"
-                            id="{{ cheese.id }}"
-                            value="{{ cheese.value }}"
-                        />
-                        <label class="form-check-label" for="{{ cheese.id }}"
-                            >{{ cheese.label }}</label
-                        >
+                        <input class="form-check-input" type="radio" name="cheese" id="{{ cheese.id }}"
+                            value="{{ cheese.value }}" />
+                        <label class="form-check-label" for="{{ cheese.id }}">{{ cheese.label }}</label>
                     </div>
                     {% endfor %}
                 </div>
@@ -79,40 +60,24 @@
                 <div id="size-section" class="mt-2">
                     {% for size in sizes %} {% if forloop.first %}
                     <div class="form-check form-check-inline">
-                        <input
-                            class="form-check-input"
-                            type="radio"
-                            name="size"
-                            id="inline-size-{{ size }}"
-                            value="{{ size }}"
-                            data-size-id="{{"
+                        <input class="form-check-input" type="radio" name="size" id="inline-size-{{ size }}"
+                            value="{{ size }}" data-size-id="{{"
                             size.id
                             }}
                             checked
                         />
                         <label
-                            class="form-check-label"
-                            for="inline-size-{{ size }}"
-                            >{{ size }}</label
-                        >
+                            class=" form-check-label" for="inline-size-{{ size }}">{{ size }}</label>
                     </div>
                     {% else %}
                     <div class="form-check form-check-inline">
-                        <input
-                            class="form-check-input"
-                            type="radio"
-                            name="size"
-                            id="inline-size-{{ size }}"
-                            value="{{ size }}"
-                            data-size-id="{{"
+                        <input class="form-check-input" type="radio" name="size" id="inline-size-{{ size }}"
+                            value="{{ size }}" data-size-id="{{"
                             size.id
                             }}
                         />
                         <label
-                            class="form-check-label"
-                            for="inline-size-{{ size }}"
-                            >{{ size }}</label
-                        >
+                            class=" form-check-label" for="inline-size-{{ size }}">{{ size }}</label>
                     </div>
                     {% endif %} {% endfor %}
                 </div>
@@ -128,24 +93,10 @@
                     <h1 class="display-3 text-center">
                         $<span id="set-price">0.0</span>
                     </h1>
-                    <input
-                        type="text"
-                        name="food-id"
-                        id="hidden-food-id"
-                        value=""
-                    />
-                    <input
-                        type="text"
-                        name="price"
-                        id="hidden-price"
-                        value=""
-                    />
-                    <button
-                        id="add-to-cart-btn"
-                        class="btn btn-primary btn-lg btn-block"
-                        type="submit"
-                        disabled
-                    >
+                    <input type="text" name="food-id" id="hidden-food-id" value="" />
+                    <input type="text" name="price" id="hidden-price" value="" />
+                    <input type="text" name="slug" value="{{ slug }}" class="d-none">
+                    <button id="add-to-cart-btn" class="btn btn-primary btn-lg btn-block" type="submit" disabled>
                         Add to cart
                     </button>
                 </div>
@@ -153,5 +104,5 @@
         </div>
     </form>
 </div>
-<script src="{% static 'orders/js/index.js' %}"></script>
+<!-- <script src="{% static 'orders/js/index.js' %}"></script> -->
 {% endblock %}

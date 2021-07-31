@@ -8,7 +8,7 @@ from django.contrib import messages
 from sslcommerz_lib import SSLCOMMERZ
 from django.utils.http import urlencode
 from django.contrib.auth.models import User
-from .forms import SignupForm, CheckoutForm
+from .forms import SignupForm, CheckoutForm, SigninForm
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
@@ -39,6 +39,24 @@ def index(request):
     orders_count = Order.objects.filter(user=request.user.id, status=1).count()
     context = {"foods": food_obj, "orders_count": orders_count}
     return render(request, "orders/index.html", context)
+
+
+def signin(request):
+    """Sign in view."""
+    if request.method == "POST":
+        form = SigninForm(request.POST)
+        if form.is_valid():
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(username=username, password=password)
+            login(request, user)
+            if "next" in request.GET:
+                return redirect(request.GET["next"])
+            else:
+                return redirect("/")
+    else:
+        form = SigninForm()
+    return render(request, "registration/login.html", {"form": form})
 
 
 def signup_view(request):
@@ -93,6 +111,7 @@ def product_view(request, slug, food_id):
 
     context = {
         "food": menu[0].food,
+        "slug": menu[0].food.slug,
         "image": image,
         "addons": addons,
         "toppings": toppings,
@@ -120,11 +139,15 @@ def price(request):
         return JsonResponse({"status": "Invalid request."})
 
 
-@login_required
 def add_to_cart(request):
     """Add to cart."""
     if request.method == "POST":
+        food_slug = request.POST["slug"]
         food_id = request.POST["food-id"]
+        if not request.user.is_authenticated:
+            return redirect("/signin?" + urlencode({
+                "next": food_slug + "/" + food_id
+            }))
         addon = request.POST["addon"]
         topping_1 = Topping.objects.get(
             topping_name=request.POST["topping-1"]) if "topping-1" in request.POST else None
@@ -216,11 +239,11 @@ def checkout(request):
                 # unique transaction id
                 'tran_id': tran_id,
                 # if transaction is succesful, user will be redirected here
-                'success_url': "pizza-subs-online.herokuapp.com/successful-payment-listener",
+                'success_url': "http://127.0.0.1:8000/successful-payment-listener",
                 # if transaction is failed, user will be redirected here
-                'fail_url': "pizza-subs-online.herokuapp.com/unsuccessful-payment-listener",
+                'fail_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
                 # after user cancels the transaction, will be redirected here
-                'cancel_url': "pizza-subs-online.herokuapp.com/unsuccessful-payment-listener",
+                'cancel_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
                 'emi_option': "0",
                 'cus_name': "test",
                 'cus_email': email,

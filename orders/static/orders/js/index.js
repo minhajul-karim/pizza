@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  alert("OOOOOOOOOO")
   const productCotainer = document.querySelector("#product-container");
   if (productCotainer) {
     const foodId = parseInt(window.location.pathname.split("/").pop());
@@ -238,7 +239,8 @@ document.addEventListener("DOMContentLoaded", () => {
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             orderRow.children[9].textContent = "Completed";
-            orderRow.children[10].children[0].disabled = true;
+            console.log(event.target)
+            // orderRow.children[10].children[0].disabled = true;
           } else {
             Error("Error confirming order");
           }
@@ -267,19 +269,17 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function getCookie(name) {
     let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-      const cookies = document.cookie.split(";");
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === name + "=") {
-          cookieValue = decodeURIComponent(
-            cookie.substring(name.length + 1)
-          );
-          break;
-        }
-      }
-    }
+    // if (document.cookie && document.cookie !== "") {
+    //   const cookies = document.cookie.split(";");
+    //   for (let i = 0; i < cookies.length; i++) {
+    //     const cookie = cookies[i].trim();
+    //     // Does this cookie string begin with the name we want?
+    //     if (cookie.substring(0, name.length + 1) === name + "=") {
+    //       cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    //       break;
+    //     }
+    //   }
+    // }
     return cookieValue;
   }
 });

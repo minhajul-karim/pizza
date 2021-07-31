@@ -169,7 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
               foodId;
             document.getElementById("hidden-price").value =
               data["price"];
-            document.getElementById("add-to-cart-btn").disabled = false;
+            document.getElementById(
+              "add-to-cart-btn"
+            ).disabled = false;
           }
         } else {
           Error("Can not connect!");
@@ -190,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (event.target.nodeName === "path") {
         // Send the order id to server to delete order
         const orderRow = event.target.parentNode.parentNode.parentNode;
-        const orderId = orderRow.children[0].textContent;
+        const orderId = event.target.dataset.foodId;
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/delete-order");
         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
@@ -231,14 +233,14 @@ document.addEventListener("DOMContentLoaded", () => {
       // delete that order, disable the button and change status to completed
       if (event.target.nodeName === "BUTTON") {
         const orderRow = event.target.parentNode.parentNode;
-        let orderId = orderRow.children[0].textContent,
-          xhr = new XMLHttpRequest();
+        const orderId = orderRow.children[0].textContent;
+        const xhr = new XMLHttpRequest();
         xhr.open("POST", "/confirm-order-admin");
         xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            orderRow.children[9].textContent = "Completed";
-            orderRow.children[10].children[0].disabled = true;
+            orderRow.children[9].innerText = "Completed";
+            event.target.disabled = true;
           } else {
             Error("Error confirming order");
           }

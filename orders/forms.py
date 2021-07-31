@@ -31,6 +31,17 @@ class SignupForm(UserCreationForm):
         return email
 
 
+class SigninForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = [
+            "username"
+        ]
+
+
 class CheckoutForm(forms.Form):
     """Class for checkout form."""
 
