@@ -239,11 +239,11 @@ def checkout(request):
                 # unique transaction id
                 'tran_id': tran_id,
                 # if transaction is succesful, user will be redirected here
-                'success_url': "http://127.0.0.1:8000/successful-payment-listener",
+                'success_url': "pizza-subs-online.herokuapp.com/successful-payment-listener",
                 # if transaction is failed, user will be redirected here
-                'fail_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
+                'fail_url': "pizza-subs-online.herokuapp.com/unsuccessful-payment-listener",
                 # after user cancels the transaction, will be redirected here
-                'cancel_url': "http://127.0.0.1:8000/unsuccessful-payment-listener",
+                'cancel_url': "pizza-subs-online.herokuapp.com/unsuccessful-payment-listener",
                 'emi_option': "0",
                 'cus_name': "test",
                 'cus_email': email,
