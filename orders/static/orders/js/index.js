@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  alert("OOOOOOOOOO")
   const productCotainer = document.querySelector("#product-container");
   if (productCotainer) {
     const foodId = parseInt(window.location.pathname.split("/").pop());
