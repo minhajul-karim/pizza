@@ -238,8 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             orderRow.children[9].textContent = "Completed";
-            console.log(event.target)
-            // orderRow.children[10].children[0].disabled = true;
+            event.target.disabled = true;
           } else {
             Error("Error confirming order");
           }
@@ -248,8 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
         data.append("orderId", orderId);
         xhr.send(data);
       }
-      //
-      const rows = document.querySelectorAll("tr");
     });
   }
 
